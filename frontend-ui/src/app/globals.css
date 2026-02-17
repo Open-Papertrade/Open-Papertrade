@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+:root {
+  /* Background colors */
+  --bg-primary: #0A0A0B;
+  --bg-sidebar: #111113;
+  --bg-card: #111113;
+  --bg-card-inner: #0A0A0B;
+  --bg-muted: #1F1F23;
+  --bg-hover: #1A1A1D;
+  --bg-bar: #2A2A2E;
+
+  /* Accent colors */
+  --accent-primary: #FF5C00;
+  --accent-secondary: #FF8A4C;
+  --accent-green: #22C55E;
+  --accent-red: #EF4444;
+
+  /* Text colors */
+  --text-primary: #FFFFFF;
+  --text-secondary: #8B8B90;
+  --text-muted: #6B6B70;
+  --text-dim: #4A4A4E;
+  --text-label: #666666;
+
+  /* Border colors */
+  --border-primary: #1F1F23;
+  --border-muted: #2A2A2E;
+}
+
+.light {
+  --bg-primary: #F5F5F7;
+  --bg-sidebar: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-card-inner: #F5F5F7;
+  --bg-muted: #E8E8ED;
+  --bg-hover: #EDEDF0;
+  --bg-bar: #D4D4D8;
+
+  --accent-primary: #FF5C00;
+  --accent-secondary: #FF8A4C;
+  --accent-green: #16A34A;
+  --accent-red: #DC2626;
+
+  --text-primary: #1A1A1D;
+  --text-secondary: #6B6B70;
+  --text-muted: #8B8B90;
+  --text-dim: #ABABAF;
+  --text-label: #999999;
+
+  --border-primary: #E4E4E7;
+  --border-muted: #D4D4D8;
+}
+
+@layer base {
+  html, body {
+    height: 100%;
+  }
+
+  /* Minimal scrollbar — thin, subtle, consistent everywhere */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-muted) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--border-muted);
+    border-radius: 9999px;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: var(--text-dim);
+  }
+
+  *::-webkit-scrollbar-thumb:active {
+    background-color: var(--text-muted);
+  }
+
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  /* Hide native number input spinners globally */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+
+  .font-primary {
+    font-family: "Inter", system-ui, sans-serif;
+  }
+
+  .font-mono {
+    font-family: "DM Mono", "JetBrains Mono", monospace;
+  }
+
+  .font-serif {
+    font-family: "Instrument Serif", Georgia, serif;
+  }
+}
