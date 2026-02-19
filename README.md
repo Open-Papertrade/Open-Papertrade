@@ -9,6 +9,9 @@ Open-source paper trading infrastructure for learning, testing, and building tra
 </p>
 
 ---
+<p align="center">
+  <img src="demo.gif" width="800"/>
+</p>
 
 ## About
 
