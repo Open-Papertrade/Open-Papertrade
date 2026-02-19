@@ -87,6 +87,29 @@ Make trading simulation accessible, open, and developer-friendly.
 We welcome contributors of all levels.  
 Fork. Build. Improve. Open a PR.
 
+--- 
+
+## 📜 License
+
+This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**.  
+
+Below is a summary of what the license allows and requires:
+
+| Action | Allowed? | Notes |
+|--------|-----------|-------|
+| **Use** | ✅ Yes | Use the software freely for personal, educational, or commercial purposes. |
+| **Modify** | ✅ Yes | Modify the code for your own use. |
+| **Distribute** | ✅ Yes | Share your modified or unmodified version **if you also provide the source code** under AGPL-3.0. |
+| **Sell / Commercial use** | ✅ Yes | Selling or commercial use is allowed, but **AGPL requires that your modifications remain open source**. |
+| **Host as SaaS / Network Use** | ✅ Yes | If you run a modified version on a server or provide it over a network, you **must make the modified source code available to users**. |
+| **Private internal use** | ✅ Yes | You can use it internally without sharing code. |
+| **Remove license / make proprietary** | ❌ No | You cannot relicense AGPL code as closed-source or proprietary. |
+| **Warranty / Liability** | ⚠️ None | Software is provided “as-is,” without warranty. You are responsible for your use. |
+
+For the full legal text, see the [GNU AGPLv3 License](https://www.gnu.org/licenses/agpl-3.0.html).
+
+
+
 ---
 
 ## Disclaimer
