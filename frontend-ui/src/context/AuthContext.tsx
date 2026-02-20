@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
+import { useRouter, usePathname } from "next/navigation";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
@@ -30,8 +31,31 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+  const pathname = usePathname();
 
-  // On mount: optimistic load from localStorage, then validate via /api/auth/me/
+  // Check maintenance status (client-side)
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/maintenance-status/`, { cache: "no-store" })
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => {
+        if (data?.enabled && pathname !== "/maintenance") {
+          router.replace("/maintenance");
+        } else if (data && !data.enabled && pathname === "/maintenance") {
+          router.replace("/");
+        }
+      })
+      .catch(() => {});
+  }, [pathname, router]);
+
+  const publicPaths = ["/login", "/signup", "/verify-email", "/forgot-password", "/reset-password", "/maintenance"];
+
+  // Redirect unauthenticated users to login
+  useEffect(() => {
+    if (!isLoading && !user && !publicPaths.includes(pathname)) {
+      router.replace("/login");
+    }
+  }, [isLoading, user, pathname, router]);
   useEffect(() => {
     const stored = localStorage.getItem("auth_user");
     if (stored) {
