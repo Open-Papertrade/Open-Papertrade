@@ -76,11 +76,7 @@ All without real financial exposure.
 
 ---
 
-## Mission
 
-Make trading simulation accessible, open, and developer-friendly.
-
----
 
 ## Contributing
 
@@ -89,6 +85,27 @@ Fork. Build. Improve. Open a PR.
 
 --- 
 
+## 💰 Funding & Sponsorship
+
+This project is independently developed and maintained.
+
+To keep the paper-trading app running smoothly, we rely on server infrastructure for hosting, real-time data handling, and performance monitoring. Server deployment and maintenance costs are ongoing.
+
+### Sponsor Server Deployment
+
+If you are interested in sponsoring server infrastructure (hosting, cloud services, or deployment costs), please reach out directly:
+
+📩 **mymadhavyadav07@gmail.com**
+
+Your support will help ensure:
+- Reliable uptime
+- Faster execution and performance
+- Scalable infrastructure
+- Continued development and improvements
+
+Thank you for helping support open financial education and trading simulation tools.
+
+---
 ## 📜 License
 
 This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**.  
