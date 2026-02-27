@@ -96,7 +96,7 @@ export function XpToastProvider({ children }: { children: ReactNode }) {
     setQueue(prev => [...prev, { amount, newLevel, newRank }]);
   }, []);
 
-  // Show next from queue
+  // Dequeue: pick the next toast when nothing is showing
   useEffect(() => {
     if (current || queue.length === 0) return;
 
@@ -104,6 +104,12 @@ export function XpToastProvider({ children }: { children: ReactNode }) {
     setQueue(prev => prev.slice(1));
     setCurrent(next);
     setPhase("enter");
+  }, [queue, current]);
+
+  // Timer: manage the phase lifecycle for the current toast
+  useEffect(() => {
+    if (!current) return;
+
 
     // Transition to visible after slide-in
     const t1 = setTimeout(() => setPhase("visible"), 400);
@@ -122,7 +128,7 @@ export function XpToastProvider({ children }: { children: ReactNode }) {
       clearTimeout(t2);
       clearTimeout(t3);
     };
-  }, [queue, current]);
+  }, [current]);
 
   const isRankUp = current?.newRank != null;
 
@@ -251,11 +257,9 @@ export function XpToastProvider({ children }: { children: ReactNode }) {
                     ? "0 0 12px rgba(255, 215, 0, 0.5)"
                     : "0 0 8px rgba(255, 92, 0, 0.4)",
                   animation: phase === "enter"
-                    ? "xpBounce 0.5s ease-out forwards"
+                    ? "xpBounce 0.5s 0.1s ease-out forwards"
                     : "none",
-                  animationDelay: "0.1s",
                   opacity: phase === "enter" ? 0 : 1,
-                  animationFillMode: "forwards",
                 }}
               >
                 +{current.amount} XP
