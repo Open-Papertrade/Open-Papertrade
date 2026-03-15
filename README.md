@@ -81,7 +81,7 @@ All without real financial exposure.
 ## Contributing
 
 We welcome contributors of all levels.  
-Fork. Build. Improve. Open a PR.
+You can refer to the [COONTRIBUTING.md](./CONTRIBUTING.md) for making open-source contributions to this project :)
 
 --- 
 
