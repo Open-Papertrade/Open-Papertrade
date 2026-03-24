@@ -81,7 +81,7 @@ All without real financial exposure.
 ## Contributing
 
 We welcome contributors of all levels.  
-You can refer to the [COONTRIBUTING.md](./CONTRIBUTING.md) for making open-source contributions to this project :)
+You can refer to the [CONTRIBUTING.md](./CONTRIBUTING.md) for making open-source contributions to this project :)
 
 --- 
 
