@@ -14,6 +14,7 @@ import {
   Settings,
   LogOut,
   FileBarChart,
+  FlaskConical,
 } from "lucide-react";
 import { usePortfolio } from "@/context/PortfolioContext";
 import { useAuth } from "@/context/AuthContext";
@@ -60,6 +61,7 @@ const navItems = [
   { icon: <History size={18} />, label: "History", href: "/history" },
   { icon: <Star size={18} />, label: "Watchlist", href: "/watchlist" },
   { icon: <FileBarChart size={18} />, label: "Reports", href: "/reports" },
+  { icon: <FlaskConical size={18} />, label: "Backtesting", href: "/backtesting" },
   { icon: <Trophy size={18} />, label: "Leaderboard", href: "/leaderboard" },
   { icon: <Users size={18} />, label: "Friends", href: "/friends" },
   { icon: <Settings size={18} />, label: "Account", href: "/account" },
@@ -99,7 +101,7 @@ export default function Sidebar() {
             icon={item.icon}
             label={item.label}
             href={item.href}
-            active={pathname === item.href}
+            active={item.href === "/" ? pathname === "/" : pathname.startsWith(item.href)}
           />
         ))}
       </nav>

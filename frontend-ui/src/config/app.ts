@@ -28,6 +28,7 @@ export const APP_CONFIG = {
     darkMode: true,
     notifications: true,
     advancedTrading: false,
+    backtesting: true,
   },
 };
 

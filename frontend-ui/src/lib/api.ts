@@ -984,6 +984,67 @@ class UserAPI {
   async getPublicProfile(username: string): Promise<PublicProfile> {
     return this.fetch(`/users/profile/${encodeURIComponent(username)}/public/`);
   }
+
+  // ── Backtesting ─────────────────────────────────────────────
+
+  async getStrategies() {
+    return this.fetch('/backtesting/strategies');
+  }
+
+  async getStrategyTemplates() {
+    return this.fetch('/backtesting/strategies/templates');
+  }
+
+  async createStrategy(data: { name: string; description?: string; config: unknown }) {
+    return this.fetch('/backtesting/strategies', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateStrategy(id: string, data: Record<string, unknown>) {
+    return this.fetch(`/backtesting/strategies/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteStrategy(id: string) {
+    return this.fetch(`/backtesting/strategies/${id}`, { method: 'DELETE' });
+  }
+
+  async cloneStrategy(id: string) {
+    return this.fetch(`/backtesting/strategies/${id}/clone`, { method: 'POST' });
+  }
+
+  async runBacktest(data: {
+    strategy_id?: string;
+    config?: unknown;
+    symbol: string;
+    start_date: string;
+    end_date: string;
+    initial_capital?: number;
+  }) {
+    return this.fetch('/backtesting/run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getBacktests(limit = 50, offset = 0) {
+    return this.fetch(`/backtesting/results?limit=${limit}&offset=${offset}`);
+  }
+
+  async getBacktest(id: string) {
+    return this.fetch(`/backtesting/results/${id}`);
+  }
+
+  async getBacktestComparison(id: string) {
+    return this.fetch(`/backtesting/results/${id}/compare`);
+  }
 }
 
 // Export singleton instances

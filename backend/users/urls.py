@@ -7,6 +7,7 @@ from . import views
 from . import security_views
 from . import report_views
 from . import admin_report_views
+from . import backtesting_views
 
 app_name = 'users'
 
@@ -90,4 +91,8 @@ urlpatterns = [
     path('2fa/disable/', security_views.TwoFactorDisableView.as_view(), name='2fa-disable'),
     path('api-keys/', security_views.APIKeyListCreateView.as_view(), name='api-keys'),
     path('api-keys/<uuid:key_id>/', security_views.APIKeyRevokeView.as_view(), name='api-key-revoke'),
+
+    # Backtesting
+    path('backtesting/run/', backtesting_views.RunBacktestView.as_view(), name='backtest-run'),
+    path('backtesting/compare/', backtesting_views.BacktestCompareView.as_view(), name='backtest-compare'),
 ]
