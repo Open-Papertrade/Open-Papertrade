@@ -55,6 +55,15 @@ secrets.json
 *.swp
 *.swo
 
+# Markdown (except README and CONTRIBUTING)
+*.md
+!README.md
+!CONTRIBUTING.md
+
+# Assets / docs folders
+icons/
+readme/
+
 # Misc
 .DS_Store
 .vercel

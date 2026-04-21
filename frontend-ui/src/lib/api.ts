@@ -2,7 +2,7 @@
  * API client for the Paper Trading backend.
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 export const API_HOST = API_BASE_URL.replace(/\/api\/?$/, '');
 
 export interface StockQuote {
@@ -1044,6 +1044,110 @@ class UserAPI {
 
   async getBacktestComparison(id: string) {
     return this.fetch(`/backtesting/results/${id}/compare`);
+  }
+
+  // ── AI Trade Coach ──────────────────────────────────────────
+
+  async getCoachDashboard() {
+    return this.fetch('/coaching/dashboard/');
+  }
+
+  async getTradeReview(tradeId: string, useLlm = false) {
+    return this.fetch(`/coaching/trade/${tradeId}/${useLlm ? '?llm=true' : ''}`);
+  }
+
+  async getCoachPatterns() {
+    return this.fetch('/coaching/patterns/');
+  }
+
+  async getCoachScore() {
+    return this.fetch('/coaching/score/');
+  }
+
+  async getCoachTips() {
+    return this.fetch('/coaching/tips/');
+  }
+
+  async sendCoachMessage(message: string, conversation: { role: string; content: string }[] = []) {
+    return this.fetch('/coaching/chat/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, conversation }),
+    });
+  }
+
+  async getCoachSession() {
+    return this.fetch('/coaching/session/');
+  }
+
+  // ── Copy Trading ────────────────────────────────────────────
+
+  async getCopyDashboard() {
+    return this.fetch('/copy-trading/');
+  }
+
+  async followTrader(username: string, feedDelay = '1H') {
+    return this.fetch(`/copy-trading/follow/${username}/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ feedDelay }),
+    });
+  }
+
+  async unfollowTrader(username: string) {
+    return this.fetch(`/copy-trading/follow/${username}/`, { method: 'DELETE' });
+  }
+
+  async startCopyTrading(username: string, config: Record<string, unknown>) {
+    return this.fetch(`/copy-trading/copy/${username}/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(config),
+    });
+  }
+
+  async updateCopyRelationship(id: string, updates: Record<string, unknown>) {
+    return this.fetch(`/copy-trading/copy/${id}/`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates),
+    });
+  }
+
+  async stopCopyTrading(id: string) {
+    return this.fetch(`/copy-trading/stop/${id}/`, { method: 'DELETE' });
+  }
+
+  async mirrorPortfolio(username: string, allocatedFunds: number, tradeDelay = 'NONE') {
+    return this.fetch(`/copy-trading/mirror/${username}/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ allocatedFunds, tradeDelay }),
+    });
+  }
+
+  async getSocialFeed(limit = 30, offset = 0) {
+    return this.fetch(`/copy-trading/feed/?limit=${limit}&offset=${offset}`);
+  }
+
+  async getCopyHistory(relationshipId: string) {
+    return this.fetch(`/copy-trading/history/${relationshipId}/`);
+  }
+
+  async getCopyPerformance() {
+    return this.fetch('/copy-trading/performance/');
+  }
+
+  async processPendingCopyTrades() {
+    return this.fetch('/copy-trading/process/', { method: 'POST' });
+  }
+
+  async getMyFollowers() {
+    return this.fetch('/copy-trading/followers/');
+  }
+
+  async getMyFollowing() {
+    return this.fetch('/copy-trading/following/');
   }
 }
 

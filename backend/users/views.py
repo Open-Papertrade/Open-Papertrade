@@ -420,6 +420,13 @@ class ExecuteTradeView(APIView):
             currency=currency,
         )
 
+        # Dispatch copy trades to followers
+        try:
+            from .copy_trading_service import dispatch_copy_trades
+            dispatch_copy_trades(trade)
+        except Exception:
+            pass  # Don't let copy trading errors block the original trade
+
         # Check for newly unlocked achievements
         new_achievements = check_achievements(user)
 

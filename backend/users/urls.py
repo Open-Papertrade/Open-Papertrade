@@ -8,6 +8,8 @@ from . import security_views
 from . import report_views
 from . import admin_report_views
 from . import backtesting_views
+from . import coaching_views
+from . import copy_trading_views
 
 app_name = 'users'
 
@@ -95,4 +97,27 @@ urlpatterns = [
     # Backtesting
     path('backtesting/run/', backtesting_views.RunBacktestView.as_view(), name='backtest-run'),
     path('backtesting/compare/', backtesting_views.BacktestCompareView.as_view(), name='backtest-compare'),
+
+    # AI Trade Coach
+    path('coaching/dashboard/', coaching_views.CoachDashboardView.as_view(), name='coach-dashboard'),
+    path('coaching/trade/<uuid:trade_id>/', coaching_views.CoachTradeReviewView.as_view(), name='coach-trade-review'),
+    path('coaching/patterns/', coaching_views.CoachPatternsView.as_view(), name='coach-patterns'),
+    path('coaching/score/', coaching_views.CoachScoreView.as_view(), name='coach-score'),
+    path('coaching/tips/', coaching_views.CoachTipsView.as_view(), name='coach-tips'),
+    path('coaching/chat/', coaching_views.CoachChatView.as_view(), name='coach-chat'),
+    path('coaching/session/', coaching_views.CoachSessionView.as_view(), name='coach-session'),
+
+    # Copy Trading / Social
+    path('copy-trading/', copy_trading_views.CopyTradingDashboardView.as_view(), name='copy-trading-dashboard'),
+    path('copy-trading/follow/<str:username>/', copy_trading_views.FollowTraderView.as_view(), name='follow-trader'),
+    path('copy-trading/copy/<str:username>/', copy_trading_views.StartCopyTradingView.as_view(), name='start-copy-trading'),
+    path('copy-trading/copy/<uuid:relationship_id>/', copy_trading_views.UpdateCopyRelationshipView.as_view(), name='update-copy-relationship'),
+    path('copy-trading/stop/<uuid:relationship_id>/', copy_trading_views.StopCopyTradingView.as_view(), name='stop-copy-trading'),
+    path('copy-trading/mirror/<str:username>/', copy_trading_views.MirrorPortfolioView.as_view(), name='mirror-portfolio'),
+    path('copy-trading/feed/', copy_trading_views.SocialFeedView.as_view(), name='social-feed'),
+    path('copy-trading/history/<uuid:relationship_id>/', copy_trading_views.CopyTradeHistoryView.as_view(), name='copy-trade-history'),
+    path('copy-trading/performance/', copy_trading_views.CopyPerformanceView.as_view(), name='copy-performance'),
+    path('copy-trading/process/', copy_trading_views.ProcessPendingView.as_view(), name='process-pending-copies'),
+    path('copy-trading/followers/', copy_trading_views.MyFollowersView.as_view(), name='my-followers'),
+    path('copy-trading/following/', copy_trading_views.MyFollowingView.as_view(), name='my-following'),
 ]

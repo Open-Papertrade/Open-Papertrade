@@ -58,7 +58,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('--email', default='demo@papertrading.com', help='Demo user email')
-        parser.add_argument('--password', default='demo1234', help='Demo user password')
+        parser.add_argument('--password', default='Demo@Trade2026', help='Demo user password')
         parser.add_argument('--name', default='Alex Thompson', help='Demo user name')
         parser.add_argument('--username', default='alex-thompson', help='Demo user username')
         parser.add_argument('--friend', action='store_true', help='Also create a friend user')
@@ -254,7 +254,7 @@ class Command(BaseCommand):
 
         # --- Friend user ---
         if options['friend']:
-            self._create_friend(user, now)
+            self._create_friend(user, now, options['password'])
 
         self.stdout.write(self.style.SUCCESS(
             f'\nDemo user created!\n'
@@ -268,7 +268,7 @@ class Command(BaseCommand):
             f'  Level:    7 (Day Trader)\n'
         ))
 
-    def _create_friend(self, demo_user, now):
+    def _create_friend(self, demo_user, now, password):
         """Create a friend user and establish friendship."""
         UserProfile.objects.filter(email='sarah@papertrading.com').delete()
         UserProfile.objects.filter(username='sarah-chen').delete()
@@ -286,7 +286,7 @@ class Command(BaseCommand):
             level=4,
             created_at=now - timedelta(days=30),
         )
-        friend.set_password('demo1234')
+        friend.set_password(password)
         friend.save()
 
         UserSettings.objects.create(
@@ -309,4 +309,4 @@ class Command(BaseCommand):
             created_at=now - timedelta(days=20),
         )
 
-        self.stdout.write(f'  Created friend: sarah-chen (sarah@papertrading.com / demo1234)')
+        self.stdout.write(f'  Created friend: sarah-chen (sarah@papertrading.com / {password})')

@@ -5,7 +5,7 @@ import { Wrench, Github, Twitter, Mail, MessageCircle } from "lucide-react";
 import { APP_CONFIG } from "@/config/app";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+  process.env.NEXT_PUBLIC_API_URL || "/api";
 
 interface Links {
   email?: string;

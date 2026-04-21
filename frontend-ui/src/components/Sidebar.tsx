@@ -15,6 +15,8 @@ import {
   LogOut,
   FileBarChart,
   FlaskConical,
+  Brain,
+  Copy,
 } from "lucide-react";
 import { usePortfolio } from "@/context/PortfolioContext";
 import { useAuth } from "@/context/AuthContext";
@@ -62,6 +64,8 @@ const navItems = [
   { icon: <Star size={18} />, label: "Watchlist", href: "/watchlist" },
   { icon: <FileBarChart size={18} />, label: "Reports", href: "/reports" },
   { icon: <FlaskConical size={18} />, label: "Backtesting", href: "/backtesting" },
+  { icon: <Brain size={18} />, label: "AI Coach", href: "/coaching" },
+  { icon: <Copy size={18} />, label: "Copy Trading", href: "/copy-trading" },
   { icon: <Trophy size={18} />, label: "Leaderboard", href: "/leaderboard" },
   { icon: <Users size={18} />, label: "Friends", href: "/friends" },
   { icon: <Settings size={18} />, label: "Account", href: "/account" },

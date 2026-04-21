@@ -552,3 +552,120 @@ class APIKey(models.Model):
             "lastUsedAt": self.last_used_at.isoformat() if self.last_used_at else None,
             "createdAt": self.created_at.isoformat(),
         }
+
+
+# ── Copy Trading / Social Follow ────────────────────────────────
+
+class TraderFollow(models.Model):
+    """Lightweight one-directional follow for the social feed."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    follower = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='following')
+    leader = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='followers')
+    feed_delay = models.CharField(max_length=4, choices=[
+        ('NONE', 'None'), ('1H', '1 Hour'), ('24H', '24 Hours'),
+    ], default='1H')
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = 'trader_follows'
+        unique_together = ['follower', 'leader']
+        ordering = ['-created_at']
+
+    def to_dict(self):
+        return {
+            "id": str(self.id),
+            "follower": {"id": str(self.follower_id), "username": self.follower.username, "name": self.follower.name, "avatarUrl": self.follower.avatar_url},
+            "leader": {"id": str(self.leader_id), "username": self.leader.username, "name": self.leader.name, "avatarUrl": self.leader.avatar_url},
+            "feedDelay": self.feed_delay,
+            "createdAt": self.created_at.isoformat(),
+        }
+
+
+class CopyRelationship(models.Model):
+    """One user (copier) automatically mirrors another user's (leader) trades."""
+    ACTIVE = 'ACTIVE'
+    PAUSED = 'PAUSED'
+    STOPPED = 'STOPPED'
+    STATUS_CHOICES = [(ACTIVE, 'Active'), (PAUSED, 'Paused'), (STOPPED, 'Stopped')]
+
+    DELAY_CHOICES = [('NONE', 'None'), ('1H', '1 Hour'), ('6H', '6 Hours'), ('24H', '24 Hours')]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    copier = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='copy_following')
+    leader = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='copy_followers')
+    status = models.CharField(max_length=7, choices=STATUS_CHOICES, default=ACTIVE)
+    allocated_funds = models.DecimalField(max_digits=20, decimal_places=2)
+    remaining_funds = models.DecimalField(max_digits=20, decimal_places=2)
+    trade_delay = models.CharField(max_length=4, choices=DELAY_CHOICES, default='NONE')
+    proportional_sizing = models.BooleanField(default=True)
+    max_trade_percent = models.DecimalField(max_digits=5, decimal_places=2, default=25.00)
+    copy_sells = models.BooleanField(default=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    stopped_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'copy_relationships'
+        unique_together = ['copier', 'leader']
+        ordering = ['-created_at']
+
+    def to_dict(self):
+        return {
+            "id": str(self.id),
+            "copier": {"id": str(self.copier_id), "username": self.copier.username, "name": self.copier.name},
+            "leader": {"id": str(self.leader_id), "username": self.leader.username, "name": self.leader.name, "avatarUrl": self.leader.avatar_url},
+            "status": self.status,
+            "allocatedFunds": float(self.allocated_funds),
+            "remainingFunds": float(self.remaining_funds),
+            "tradeDelay": self.trade_delay,
+            "proportionalSizing": self.proportional_sizing,
+            "maxTradePercent": float(self.max_trade_percent),
+            "copySells": self.copy_sells,
+            "createdAt": self.created_at.isoformat(),
+            "stoppedAt": self.stopped_at.isoformat() if self.stopped_at else None,
+        }
+
+
+class CopyTrade(models.Model):
+    """A trade executed (or attempted) on behalf of a copier."""
+    PENDING = 'PENDING'
+    EXECUTED = 'EXECUTED'
+    FAILED = 'FAILED'
+    SKIPPED = 'SKIPPED'
+    STATUS_CHOICES = [(PENDING, 'Pending'), (EXECUTED, 'Executed'), (FAILED, 'Failed'), (SKIPPED, 'Skipped')]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    copy_relationship = models.ForeignKey(CopyRelationship, on_delete=models.CASCADE, related_name='copy_trades')
+    source_trade = models.ForeignKey(Trade, on_delete=models.SET_NULL, null=True, related_name='copied_as')
+    executed_trade = models.ForeignKey(Trade, on_delete=models.SET_NULL, null=True, blank=True, related_name='copy_source')
+    status = models.CharField(max_length=8, choices=STATUS_CHOICES, default=PENDING)
+    failure_reason = models.CharField(max_length=200, blank=True)
+    scheduled_at = models.DateTimeField()
+    executed_at = models.DateTimeField(null=True, blank=True)
+    source_symbol = models.CharField(max_length=20)
+    source_trade_type = models.CharField(max_length=4)
+    source_shares = models.DecimalField(max_digits=20, decimal_places=8)
+    source_price = models.DecimalField(max_digits=20, decimal_places=6)
+    copy_shares = models.DecimalField(max_digits=20, decimal_places=8, default=0)
+    copy_price = models.DecimalField(max_digits=20, decimal_places=6, null=True, blank=True)
+
+    class Meta:
+        db_table = 'copy_trades'
+        ordering = ['-scheduled_at']
+
+    def to_dict(self):
+        return {
+            "id": str(self.id),
+            "relationshipId": str(self.copy_relationship_id),
+            "sourceTradeId": str(self.source_trade_id) if self.source_trade_id else None,
+            "executedTradeId": str(self.executed_trade_id) if self.executed_trade_id else None,
+            "status": self.status,
+            "failureReason": self.failure_reason,
+            "scheduledAt": self.scheduled_at.isoformat(),
+            "executedAt": self.executed_at.isoformat() if self.executed_at else None,
+            "sourceSymbol": self.source_symbol,
+            "sourceTradeType": self.source_trade_type,
+            "sourceShares": float(self.source_shares),
+            "sourcePrice": float(self.source_price),
+            "copyShares": float(self.copy_shares),
+            "copyPrice": float(self.copy_price) if self.copy_price else None,
+        }
