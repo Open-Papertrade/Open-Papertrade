@@ -22,6 +22,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
+import QuickSettings from "@/components/QuickSettings";
 import { usePortfolio } from "@/context/PortfolioContext";
 import { stockAPI, StockQuote } from "@/lib/api";
 import { formatCurrency, formatPercent, formatDateTime } from "@/lib/utils";
@@ -139,6 +140,8 @@ export default function Dashboard() {
             </p>
           </div>
           <div className="flex items-center gap-3">
+            <QuickSettings />
+            <div className="w-px h-6 bg-[var(--border-primary)]" />
             <button
               onClick={handleRefresh}
               disabled={isRefreshing || isLoading}

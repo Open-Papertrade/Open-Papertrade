@@ -17,6 +17,7 @@ import {
   FlaskConical,
   Brain,
   Copy,
+  CandlestickChart,
 } from "lucide-react";
 import { usePortfolio } from "@/context/PortfolioContext";
 import { useAuth } from "@/context/AuthContext";
@@ -58,6 +59,7 @@ function NavItem({ icon, label, href, active }: NavItemProps) {
 const navItems = [
   { icon: <LayoutDashboard size={18} />, label: "Dashboard", href: "/" },
   { icon: <TrendingUp size={18} />, label: "Markets", href: "/markets" },
+  { icon: <CandlestickChart size={18} />, label: "Charts", href: "/chart" },
   { icon: <Wallet size={18} />, label: "Portfolio", href: "/portfolio" },
   { icon: <Repeat size={18} />, label: "Trade", href: "/trade" },
   { icon: <History size={18} />, label: "History", href: "/history" },
