@@ -190,11 +190,14 @@ export default function FilingsPage() {
   return (
     <div className="flex h-full bg-[var(--bg-primary)]">
       <Sidebar />
-      <main className="flex-1 overflow-y-auto">
-        <PageHeader title="Filings Research" subtitle="Ask questions about SEC filings — every answer cites its sources" />
+      <main className="flex-1 flex flex-col gap-6 py-8 px-10 overflow-auto">
+        <PageHeader
+          title="Filings Research"
+          subtitle="Ask questions about SEC filings — every answer cites its sources"
+        />
 
-        <div className="max-w-5xl mx-auto px-6 py-6 space-y-6">
-          <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-5">
+        <div className="flex flex-col gap-6">
+          <div className="rounded-xl border border-[var(--border-primary)] bg-[var(--bg-card)] p-5">
             <label className="text-xs uppercase tracking-wide text-[var(--text-muted)] mb-2 block">
               Your question
             </label>
@@ -204,7 +207,7 @@ export default function FilingsPage() {
               onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) submit(); }}
               placeholder="e.g., How has Tesla described production capacity constraints?"
               rows={3}
-              className="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] resize-none"
+              className="w-full bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] resize-none"
             />
 
             <div className="flex flex-wrap items-center justify-between gap-3 mt-3">
@@ -238,7 +241,7 @@ export default function FilingsPage() {
                 <button
                   key={q}
                   onClick={() => setQuestion(q)}
-                  className="text-xs px-2.5 py-1 rounded-full border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition"
+                  className="text-xs px-2.5 py-1 rounded-full border border-[var(--border-primary)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] transition"
                 >
                   {q}
                 </button>
@@ -246,7 +249,7 @@ export default function FilingsPage() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-4 space-y-3">
+          <div className="rounded-xl border border-[var(--border-primary)] bg-[var(--bg-card)] p-4 space-y-3">
             <div className="flex items-center gap-2">
               <Plus size={14} className="text-[var(--accent-primary)]" />
               <div className="text-xs uppercase tracking-wide text-[var(--text-muted)]">
@@ -261,12 +264,12 @@ export default function FilingsPage() {
                 onChange={(e) => setIngestUrl(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") submitIngest(); }}
                 placeholder="https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/aapl-20240928.htm"
-                className="flex-1 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg px-3 py-2 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
+                className="flex-1 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg px-3 py-2 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]"
               />
               <button
                 onClick={submitIngest}
                 disabled={ingestSubmitting || !ingestUrl.trim()}
-                className="flex items-center gap-1.5 bg-[var(--bg-primary)] hover:border-[var(--accent-primary)] border border-[var(--border-color)] text-[var(--text-primary)] text-xs font-medium px-3 py-2 rounded-lg transition disabled:opacity-40"
+                className="flex items-center gap-1.5 bg-[var(--bg-primary)] hover:border-[var(--accent-primary)] border border-[var(--border-primary)] text-[var(--text-primary)] text-xs font-medium px-3 py-2 rounded-lg transition disabled:opacity-40"
               >
                 {ingestSubmitting ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
                 Ingest
@@ -284,7 +287,7 @@ export default function FilingsPage() {
             )}
 
             {jobs.length > 0 && (
-              <div className="pt-2 border-t border-[var(--border-color)] space-y-1.5">
+              <div className="pt-2 border-t border-[var(--border-primary)] space-y-1.5">
                 {jobs.map(j => (
                   <div key={j.id} className="flex items-center justify-between gap-3 text-xs">
                     <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -311,13 +314,13 @@ export default function FilingsPage() {
           </div>
 
           {companies.length > 0 && (
-            <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-4">
+            <div className="rounded-xl border border-[var(--border-primary)] bg-[var(--bg-card)] p-4">
               <div className="text-xs uppercase tracking-wide text-[var(--text-muted)] mb-2">
                 Ingested corpus
               </div>
               <div className="flex flex-wrap gap-2">
                 {companies.map(c => (
-                  <div key={c.id} className="text-xs px-2.5 py-1 rounded-full bg-[var(--bg-primary)] border border-[var(--border-color)]">
+                  <div key={c.id} className="text-xs px-2.5 py-1 rounded-full bg-[var(--bg-primary)] border border-[var(--border-primary)]">
                     <span className="font-semibold text-[var(--text-primary)]">{c.ticker}</span>
                     <span className="text-[var(--text-muted)] mx-1">·</span>
                     <span className="text-[var(--text-muted)]">{c.filings_count} filings</span>
@@ -335,7 +338,7 @@ export default function FilingsPage() {
           )}
 
           {result && (
-            <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-5 space-y-4">
+            <div className="rounded-xl border border-[var(--border-primary)] bg-[var(--bg-card)] p-5 space-y-4">
               <div className="flex items-center gap-2">
                 <FileSearch size={16} className="text-[var(--accent-primary)]" />
                 <div className="text-xs uppercase tracking-wide text-[var(--text-muted)]">
@@ -368,13 +371,13 @@ export default function FilingsPage() {
               )}
 
               {result.citations.length > 0 && (
-                <div className="pt-3 border-t border-[var(--border-color)]">
+                <div className="pt-3 border-t border-[var(--border-primary)]">
                   <div className="text-xs uppercase tracking-wide text-[var(--text-muted)] mb-2">
                     Citations
                   </div>
                   <div className="space-y-2">
                     {result.citations.map(c => (
-                      <div key={c.index} className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-primary)] p-3 text-xs">
+                      <div key={c.index} className="rounded-lg border border-[var(--border-primary)] bg-[var(--bg-primary)] p-3 text-xs">
                         <div className="flex items-center justify-between gap-2 mb-1">
                           <div className="flex items-center gap-2">
                             <span className="font-mono text-[var(--accent-primary)]">[{c.index}]</span>
@@ -396,7 +399,7 @@ export default function FilingsPage() {
               )}
 
               {(result.usage || result.trace?.usage) && (
-                <div className="text-[10px] text-[var(--text-muted)] pt-2 border-t border-[var(--border-color)]">
+                <div className="text-[10px] text-[var(--text-muted)] pt-2 border-t border-[var(--border-primary)]">
                   {result.usage?.provider || result.trace?.usage.provider} · {result.usage?.model || result.trace?.usage.model}
                   {" · "}
                   in: {result.usage?.input_tokens ?? result.trace?.usage.input_tokens} tok

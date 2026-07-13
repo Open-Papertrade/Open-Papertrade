@@ -18,6 +18,7 @@ import {
   Brain,
   Copy,
   CandlestickChart,
+  FileSearch,
 } from "lucide-react";
 import { usePortfolio } from "@/context/PortfolioContext";
 import { useAuth } from "@/context/AuthContext";
@@ -67,6 +68,7 @@ const navItems = [
   { icon: <FileBarChart size={18} />, label: "Reports", href: "/reports" },
   { icon: <FlaskConical size={18} />, label: "Backtesting", href: "/backtesting" },
   { icon: <Brain size={18} />, label: "AI Coach", href: "/coaching" },
+  { icon: <FileSearch size={18} />, label: "Filings Research", href: "/filings" },
   { icon: <Copy size={18} />, label: "Copy Trading", href: "/copy-trading" },
   { icon: <Trophy size={18} />, label: "Leaderboard", href: "/leaderboard" },
   { icon: <Users size={18} />, label: "Friends", href: "/friends" },
@@ -85,9 +87,9 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="w-[260px] h-full bg-[var(--bg-sidebar)] flex flex-col py-6 px-5 border-l-[3px] border-l-[var(--accent-primary)]">
+    <aside className="w-[260px] h-full bg-[var(--bg-sidebar)] flex flex-col py-6 px-5 border-l-[3px] border-l-[var(--accent-primary)] overflow-hidden">
       {/* Logo */}
-      <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+      <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity shrink-0">
         <img src="/logo.png" alt="Open Papertrade" width={32} height={32} className="shrink-0" />
         <div className="flex items-center gap-1">
           <span className="font-mono text-sm tracking-[1px] text-[var(--text-primary)]">
@@ -99,8 +101,8 @@ export default function Sidebar() {
         </div>
       </Link>
 
-      {/* Navigation */}
-      <nav className="flex flex-col gap-1 mt-8 flex-1">
+      {/* Navigation — scrolls if it overflows so the account block below stays pinned */}
+      <nav className="flex flex-col gap-1 mt-8 flex-1 min-h-0 overflow-y-auto pr-1 -mr-1">
         {navItems.map((item) => (
           <NavItem
             key={item.href}
@@ -113,10 +115,10 @@ export default function Sidebar() {
       </nav>
 
       {/* Divider */}
-      <div className="h-px bg-[var(--border-muted)] my-5" />
+      <div className="h-px bg-[var(--border-muted)] my-5 shrink-0" />
 
       {/* User Account */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 shrink-0">
         <Link
           href="/account"
           className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer hover:opacity-80 transition-opacity"
