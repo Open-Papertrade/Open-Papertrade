@@ -34,3 +34,9 @@ yfinance==1.1.0
 dj-database-url==2.3.0
 psycopg2-binary==2.9.10
 supabase==2.13.0
+
+# Filings research analyst (Phase 0+)
+sentence-transformers==3.3.1
+rank-bm25==0.2.2
+anthropic==0.44.0
+openai==1.59.9

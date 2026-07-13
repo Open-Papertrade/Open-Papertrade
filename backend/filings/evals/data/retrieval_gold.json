@@ -1,0 +1,65 @@
+{
+  "description": "Retrieval gold set. Each item: a question and one or more strings that MUST appear in a retrieved chunk to count as a hit.",
+  "items": [
+    {
+      "id": "r1",
+      "question": "What are Apple's largest reported risk factors?",
+      "tickers": ["AAPL"],
+      "must_contain_any": ["risk factors", "adverse effect on the Company"]
+    },
+    {
+      "id": "r2",
+      "question": "How does NVIDIA describe demand for its data center GPUs?",
+      "tickers": ["NVDA"],
+      "must_contain_any": ["Data Center", "AI", "accelerated computing"]
+    },
+    {
+      "id": "r3",
+      "question": "What does Tesla say about production capacity constraints?",
+      "tickers": ["TSLA"],
+      "must_contain_any": ["production", "capacity", "manufacturing"]
+    },
+    {
+      "id": "r4",
+      "question": "What is Apple's exposure to foreign currency exchange rates?",
+      "tickers": ["AAPL"],
+      "must_contain_any": ["foreign currency", "exchange rate", "U.S. dollar"]
+    },
+    {
+      "id": "r5",
+      "question": "How does NVIDIA describe competition in its markets?",
+      "tickers": ["NVDA"],
+      "must_contain_any": ["competition", "competitors", "competitive"]
+    },
+    {
+      "id": "r6",
+      "question": "What is Tesla's approach to autonomous driving technology?",
+      "tickers": ["TSLA"],
+      "must_contain_any": ["Autopilot", "Full Self-Driving", "autonomous"]
+    },
+    {
+      "id": "r7",
+      "question": "Apple stock repurchase program size and status",
+      "tickers": ["AAPL"],
+      "must_contain_any": ["share repurchase", "repurchase program", "buyback"]
+    },
+    {
+      "id": "r8",
+      "question": "NVIDIA export control impact on China business",
+      "tickers": ["NVDA"],
+      "must_contain_any": ["export control", "China", "licensing requirement"]
+    },
+    {
+      "id": "r9",
+      "question": "Tesla energy storage business",
+      "tickers": ["TSLA"],
+      "must_contain_any": ["energy storage", "Megapack", "Powerwall"]
+    },
+    {
+      "id": "r10",
+      "question": "Apple environmental sustainability goals",
+      "tickers": ["AAPL"],
+      "must_contain_any": ["carbon", "environmental", "climate"]
+    }
+  ]
+}

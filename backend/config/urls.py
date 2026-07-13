@@ -17,6 +17,7 @@ def api_root(request):
         "endpoints": {
             "stocks": "/api/stocks/",
             "users": "/api/users/",
+            "filings": "/api/filings/",
             "admin": "/admin/",
         },
         "stock_endpoints": {
@@ -73,6 +74,7 @@ urlpatterns = [
     path('api/', api_root, name='api-root'),
     path('api/stocks/', include('stocks.urls', namespace='stocks')),
     path('api/users/', include('users.urls', namespace='users')),
+    path('api/filings/', include('filings.urls', namespace='filings')),
     path('api/auth/signup/', SignupView.as_view(), name='auth-signup'),
     path('api/auth/login/', LoginView.as_view(), name='auth-login'),
     path('api/auth/refresh/', RefreshTokenView.as_view(), name='auth-refresh'),

@@ -1,0 +1,86 @@
+{
+  "description": "Answer gold set. Each item: a question, ideal answer, and rubric criteria. 'should_decline' means the corpus doesn't support any answer and the system must refuse.",
+  "items": [
+    {
+      "id": "a1",
+      "question": "What are the top risk factors Apple identifies in its most recent 10-K?",
+      "tickers": ["AAPL"],
+      "criteria": [
+        "Mentions at least 3 distinct categories of risk",
+        "Includes supply chain / manufacturing concentration risk",
+        "Includes reliance on third-party suppliers or specific components"
+      ],
+      "should_decline": false
+    },
+    {
+      "id": "a2",
+      "question": "How does NVIDIA describe demand growth in Data Center?",
+      "tickers": ["NVDA"],
+      "criteria": [
+        "Mentions AI or accelerated computing as a driver",
+        "References specific customer types (hyperscalers, cloud providers)"
+      ],
+      "should_decline": false
+    },
+    {
+      "id": "a3",
+      "question": "What does Tesla say about production capacity for the Cybertruck?",
+      "tickers": ["TSLA"],
+      "criteria": [
+        "Mentions Cybertruck by name",
+        "References production ramp / capacity / manufacturing status"
+      ],
+      "should_decline": false
+    },
+    {
+      "id": "a4",
+      "question": "What is the exact interest rate paid on Apple's Series 2029 notes as of the filing date?",
+      "tickers": ["AAPL"],
+      "criteria": [
+        "System should decline if the filing does not mention this specific series",
+        "Or produces the exact quoted rate WITH a citation to the note table"
+      ],
+      "should_decline": true
+    },
+    {
+      "id": "a5",
+      "question": "What is NVIDIA's exposure to export controls affecting China sales?",
+      "tickers": ["NVDA"],
+      "criteria": [
+        "Mentions U.S. government export restrictions",
+        "Mentions impact on China / A100 / H100 / H800 / H20 sales or licensing"
+      ],
+      "should_decline": false
+    },
+    {
+      "id": "a6",
+      "question": "Compare Apple's and NVIDIA's stated approach to R&D investment.",
+      "tickers": ["AAPL", "NVDA"],
+      "criteria": [
+        "Cites at least one chunk from each company",
+        "Describes R&D philosophy or spending posture for both"
+      ],
+      "should_decline": false
+    },
+    {
+      "id": "a7",
+      "question": "Did Tesla acquire a specific lithium mining company named 'LithGold Corp' during the reporting period?",
+      "tickers": ["TSLA"],
+      "criteria": [
+        "System must decline — this is a fabricated entity",
+        "Refusal must NOT include a citation"
+      ],
+      "should_decline": true
+    },
+    {
+      "id": "a8",
+      "question": "What does Apple say about services revenue?",
+      "tickers": ["AAPL"],
+      "criteria": [
+        "Mentions services segment or category",
+        "Includes some directional statement (growth / composition / mix)"
+      ],
+      "should_decline": false
+    }
+  ]
+}

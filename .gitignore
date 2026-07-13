@@ -60,6 +60,9 @@ secrets.json
 !README.md
 !CONTRIBUTING.md
 
+# PDFs
+*.pdf
+
 # Assets / docs folders
 icons/
 readme/

@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     # Local
     'stocks',
     'users',
+    'filings',
 ]
 
 MIDDLEWARE = [
@@ -176,6 +177,19 @@ EXCHANGERATE_API_KEY = os.getenv('EXCHANGERATE_API_KEY', '')
 
 # Cache settings for stock prices (in seconds)
 STOCK_CACHE_TTL = 60  # 1 minute cache
+
+# SEC filings / research analyst
+SEC_EDGAR_USER_AGENT = os.getenv(
+    'SEC_EDGAR_USER_AGENT',
+    'Open-Papertrade Research (contact@example.com)'
+)
+FILINGS_EMBEDDING_MODEL = os.getenv(
+    'FILINGS_EMBEDDING_MODEL',
+    'sentence-transformers/all-MiniLM-L6-v2'
+)
+FILINGS_CHUNK_TOKENS = int(os.getenv('FILINGS_CHUNK_TOKENS', '400'))
+FILINGS_CHUNK_OVERLAP = int(os.getenv('FILINGS_CHUNK_OVERLAP', '50'))
+LLM_PROVIDER = os.getenv('LLM_PROVIDER', 'anthropic')
 
 # Unfold Admin Configuration
 from django.templatetags.static import static
