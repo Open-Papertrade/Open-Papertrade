@@ -2,14 +2,14 @@
 
 * [Open Papertrade](README.md)
 
-## 🚀 Getting Started
+## Getting Started
 
 * [Prerequisites](getting-started/prerequisites.md)
 * [Installation](getting-started/installation.md)
 * [First Run](getting-started/first-run.md)
 * [Troubleshooting](getting-started/troubleshooting.md)
 
-## ✨ Features
+## Features
 
 * [Overview](features/overview.md)
 * [Paper Trading](features/paper-trading.md)
@@ -20,7 +20,7 @@
 * [Filings Research Analyst](features/filings-research.md)
 * [Leaderboard & Friends](features/social.md)
 
-## 🧠 Filings Deep Dive
+## Filings Deep Dive
 
 * [Architecture](filings-deep-dive/architecture.md)
 * [Ingestion Pipeline](filings-deep-dive/ingestion.md)
@@ -29,7 +29,7 @@
 * [The Agentic Loop](filings-deep-dive/agent.md)
 * [Evaluation Harness](filings-deep-dive/evals.md)
 
-## 🔌 LLM Providers
+## LLM Providers
 
 * [Overview](llm-providers/overview.md)
 * [OpenRouter (recommended)](llm-providers/openrouter.md)
@@ -39,13 +39,13 @@
 * [Ollama (local)](llm-providers/ollama.md)
 * [Local OpenAI-compatible](llm-providers/local.md)
 
-## 📚 Reference
+## Reference
 
 * [Environment Variables](reference/environment-variables.md)
 * [API Reference](reference/api.md)
 * [CLI Commands](reference/cli-commands.md)
 * [Project Structure](reference/project-structure.md)
 
-## 🤝 Contributing
+## Contributing
 
 * [Contributing Guide](contributing.md)
