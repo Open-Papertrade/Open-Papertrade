@@ -5,7 +5,7 @@ Complete setup takes about **15 minutes** end-to-end. You'll open **two terminal
 ## Step 1 — Clone the repository
 
 ```bash
-git clone https://github.com/<your-org>/Open-Papertrade.git
+git clone https://github.com/Open-Papertrade/Open-Papertrade.git
 cd Open-Papertrade
 ```
 
@@ -122,7 +122,7 @@ Expected:
 
 ## Step 4 — Verify
 
-Open **[http://localhost:3000](http://localhost:3000)** — you should see the Open Papertrade dashboard.
+Open [**http://localhost:3000**](http://localhost:3000) — you should see the Open Papertrade dashboard.
 
 Health check from a new terminal:
 
