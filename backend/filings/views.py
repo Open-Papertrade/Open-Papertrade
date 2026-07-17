@@ -40,11 +40,46 @@ def companies(request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def filings(request):
-    qs = Filing.objects.select_related('company').all()
+    qs = (
+        Filing.objects
+        .select_related('company')
+        .annotate(chunk_count=Count('chunks', distinct=True),
+                  section_count=Count('sections', distinct=True))
+        .order_by('-ingested_at')
+    )
     ticker = request.GET.get('ticker')
     if ticker:
         qs = qs.filter(company__ticker=ticker.upper())
     return Response(FilingSerializer(qs, many=True).data)
+
+
+@api_view(['DELETE'])
+@permission_classes([AllowAny])
+def delete_filing(request, filing_id: int):
+    filing = Filing.objects.select_related('company').filter(id=filing_id).first()
+    if filing is None:
+        return Response({'error': 'filing not found'}, status=404)
+
+    company_id = filing.company_id
+    company_ticker = filing.company.ticker
+    filing.delete()  # cascades to Section + Chunk
+
+    remaining = Filing.objects.filter(company_id=company_id).count()
+    if remaining == 0:
+        Company.objects.filter(id=company_id).delete()
+
+    try:
+        from .services.bm25 import invalidate_cache
+        invalidate_cache()
+    except Exception:
+        pass
+
+    return Response({
+        'deleted': True,
+        'filing_id': filing_id,
+        'company_ticker': company_ticker,
+        'company_removed': remaining == 0,
+    })
 
 
 def _parse_filters(request) -> RetrievalFilters:
@@ -113,6 +148,29 @@ def search_view(request):
     })
 
 
+def _llm_error_response(exc: Exception):
+    """Translate provider SDK errors into a friendly 502 payload
+    and log the full traceback server-side for debugging."""
+    import logging
+    logging.getLogger('filings').exception('LLM provider error in /ask/')
+
+    msg = str(exc) or exc.__class__.__name__
+    first_line = next((l.strip() for l in msg.splitlines() if l.strip()), msg)
+    return Response(
+        {
+            'error': 'llm_provider_error',
+            'exception_type': exc.__class__.__name__,
+            'detail': first_line[:800],
+            'hint': (
+                "Check LLM_PROVIDER and the corresponding *_API_KEY / *_MODEL in "
+                "backend/.env. For OpenRouter, verify the model slug at "
+                "https://openrouter.ai/models — free slugs are rotated frequently."
+            ),
+        },
+        status=502,
+    )
+
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def ask(request):
@@ -126,19 +184,22 @@ def ask(request):
     hybrid = bool(request.data.get('hybrid', True))
     rerank = bool(request.data.get('rerank', True))
 
-    if use_agent:
-        res = run_agent(
-            question, provider_name=provider, model=model,
+    try:
+        if use_agent:
+            res = run_agent(
+                question, provider_name=provider, model=model,
+                use_hybrid=hybrid, use_rerank=rerank,
+            )
+            return Response(res.to_dict())
+
+        filters = _parse_filters(request)
+        res = answer_question(
+            question, filters=filters, provider_name=provider, model=model,
             use_hybrid=hybrid, use_rerank=rerank,
         )
         return Response(res.to_dict())
-
-    filters = _parse_filters(request)
-    res = answer_question(
-        question, filters=filters, provider_name=provider, model=model,
-        use_hybrid=hybrid, use_rerank=rerank,
-    )
-    return Response(res.to_dict())
+    except Exception as exc:
+        return _llm_error_response(exc)
 
 
 def _serialize_job(job: IngestJob) -> dict:

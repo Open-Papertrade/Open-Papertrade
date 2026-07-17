@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Loader2, FileSearch, Send, ExternalLink, AlertTriangle, Sparkles, Plus, CheckCircle2, XCircle } from "lucide-react";
+import { Loader2, FileSearch, Send, ExternalLink, AlertTriangle, Sparkles, Plus, CheckCircle2, XCircle, Trash2 } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import PageHeader from "@/components/PageHeader";
 import { API_HOST } from "@/lib/api";
@@ -32,11 +32,18 @@ interface AskResponse {
   };
 }
 
-interface CompanyRow {
+interface FilingRow {
   id: number;
-  ticker: string;
-  name: string;
-  filings_count: number;
+  company_ticker: string;
+  company_name: string;
+  form_type: string;
+  accession_number: string;
+  filed_date: string;
+  fiscal_year: number | null;
+  source_url: string;
+  ingested_at: string;
+  chunk_count: number;
+  section_count: number;
 }
 
 interface IngestJob {
@@ -60,15 +67,15 @@ interface IngestJob {
 }
 
 const SAMPLE_QUESTIONS = [
-  "What are Apple's largest risk factors?",
-  "How does NVIDIA describe demand for its data center GPUs?",
-  "Compare Apple's and NVIDIA's approach to R&D investment.",
-  "What does Tesla say about production capacity for the Cybertruck?",
+  "What are the largest risk factors disclosed in this filing?",
+  "Summarize the Management's Discussion & Analysis (MD&A) section.",
+  "How does the company describe its competitive landscape?",
+  "What forward-looking statements or guidance does the company provide?",
 ];
 
 export default function FilingsPage() {
   const [question, setQuestion] = useState("");
-  const [companies, setCompanies] = useState<CompanyRow[]>([]);
+  const [filings, setFilings] = useState<FilingRow[]>([]);
   const [result, setResult] = useState<AskResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,13 +88,14 @@ export default function FilingsPage() {
   const [ingestSubmitting, setIngestSubmitting] = useState(false);
   const [ingestError, setIngestError] = useState<string | null>(null);
   const [jobs, setJobs] = useState<IngestJob[]>([]);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const activeJobsRef = useRef(false);
 
-  const loadCompanies = useCallback(async () => {
+  const loadFilings = useCallback(async () => {
     try {
-      const res = await fetch(`${API_HOST}/api/filings/companies/`, { credentials: "include" });
+      const res = await fetch(`${API_HOST}/api/filings/filings/`, { credentials: "include" });
       if (!res.ok) return;
-      setCompanies(await res.json());
+      setFilings(await res.json());
     } catch { /* ignore */ }
   }, []);
 
@@ -100,14 +108,34 @@ export default function FilingsPage() {
       const hasActive = data.some(j => j.status === "pending" || j.status === "running");
       if (!hasActive && activeJobsRef.current) {
         activeJobsRef.current = false;
-        loadCompanies();
+        loadFilings();
       } else if (hasActive) {
         activeJobsRef.current = true;
       }
     } catch { /* ignore */ }
-  }, [loadCompanies]);
+  }, [loadFilings]);
 
-  useEffect(() => { loadCompanies(); loadJobs(); }, [loadCompanies, loadJobs]);
+  useEffect(() => { loadFilings(); loadJobs(); }, [loadFilings, loadJobs]);
+
+  const deleteFiling = async (row: FilingRow) => {
+    const label = `${row.company_ticker} ${row.form_type} (${row.filed_date})`;
+    if (!confirm(`Delete ${label}?\n\nThis removes the filing and all its ${row.chunk_count} chunks. Cannot be undone.`)) return;
+    setDeletingId(row.id);
+    try {
+      const res = await fetch(`${API_HOST}/api/filings/filings/${row.id}/`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to delete filing");
+      }
+      await loadFilings();
+    } catch (e: any) {
+      alert(e.message);
+    }
+    setDeletingId(null);
+  };
 
   useEffect(() => {
     const anyActive = jobs.some(j => j.status === "pending" || j.status === "running");
@@ -132,6 +160,7 @@ export default function FilingsPage() {
       if (!res.ok) throw new Error(data.error || "Failed to enqueue ingestion");
       setIngestUrl("");
       loadJobs();
+      loadFilings();
     } catch (e: any) {
       setIngestError(e.message);
     }
@@ -313,17 +342,43 @@ export default function FilingsPage() {
             )}
           </div>
 
-          {companies.length > 0 && (
-            <div className="rounded-xl border border-[var(--border-primary)] bg-[var(--bg-card)] p-4">
-              <div className="text-xs uppercase tracking-wide text-[var(--text-muted)] mb-2">
-                Ingested corpus
+          {filings.length > 0 && (
+            <div className="rounded-xl border border-[var(--border-primary)] bg-[var(--bg-card)] p-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="text-xs uppercase tracking-wide text-[var(--text-muted)]">
+                  Ingested filings ({filings.length})
+                </div>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {companies.map(c => (
-                  <div key={c.id} className="text-xs px-2.5 py-1 rounded-full bg-[var(--bg-primary)] border border-[var(--border-primary)]">
-                    <span className="font-semibold text-[var(--text-primary)]">{c.ticker}</span>
-                    <span className="text-[var(--text-muted)] mx-1">·</span>
-                    <span className="text-[var(--text-muted)]">{c.filings_count} filings</span>
+              <div className="divide-y divide-[var(--border-primary)]">
+                {filings.map(f => (
+                  <div key={f.id} className="flex items-center justify-between gap-3 py-2 first:pt-0 last:pb-0">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <span className="font-semibold text-[var(--text-primary)] text-sm w-16 shrink-0">{f.company_ticker}</span>
+                      <span className="text-xs text-[var(--text-secondary)] w-14 shrink-0">{f.form_type}</span>
+                      <span className="text-xs text-[var(--text-muted)] w-24 shrink-0">{f.filed_date}</span>
+                      <span className="text-xs text-[var(--text-muted)] truncate">
+                        {f.chunk_count} chunks · {f.section_count} sections
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <a
+                        href={f.source_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="p-1.5 rounded-md text-[var(--text-muted)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-hover)] transition"
+                        title="Open source filing on sec.gov"
+                      >
+                        <ExternalLink size={13} />
+                      </a>
+                      <button
+                        onClick={() => deleteFiling(f)}
+                        disabled={deletingId === f.id}
+                        className="p-1.5 rounded-md text-[var(--text-muted)] hover:text-[var(--accent-red)] hover:bg-[var(--accent-red)]/10 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                        title="Delete this filing"
+                      >
+                        {deletingId === f.id ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -398,15 +453,6 @@ export default function FilingsPage() {
                 </div>
               )}
 
-              {(result.usage || result.trace?.usage) && (
-                <div className="text-[10px] text-[var(--text-muted)] pt-2 border-t border-[var(--border-primary)]">
-                  {result.usage?.provider || result.trace?.usage.provider} · {result.usage?.model || result.trace?.usage.model}
-                  {" · "}
-                  in: {result.usage?.input_tokens ?? result.trace?.usage.input_tokens} tok
-                  {" · "}
-                  out: {result.usage?.output_tokens ?? result.trace?.usage.output_tokens} tok
-                </div>
-              )}
             </div>
           )}
         </div>

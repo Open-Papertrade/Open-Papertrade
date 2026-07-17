@@ -73,6 +73,21 @@ def _snippet(text: str, max_len: int = 320) -> str:
     return text if len(text) <= max_len else text[:max_len].rsplit(' ', 1)[0] + '…'
 
 
+def _is_relevant(r: RetrievedChunk, min_dense: float, min_rerank: float) -> bool:
+    """Score-aware relevance check.
+
+    Different retrieval layers produce scores on different scales — cosine ∈ [0,1],
+    RRF sums are ~[0, 0.05], cross-encoder logits are ~[-10, +10]. A single
+    numeric threshold cannot work across them, so we branch by which layer produced
+    the score.
+    """
+    if r.rerank_score != 0.0:
+        return r.rerank_score >= min_rerank
+    if r.fused_score > 0.0:
+        return True
+    return r.dense_score >= min_dense
+
+
 def answer_question(
     question: str,
     *,
@@ -83,6 +98,7 @@ def answer_question(
     use_hybrid: bool = False,
     use_rerank: bool = False,
     min_score: float = 0.15,
+    min_rerank_score: float = -5.0,
 ) -> QAResult:
     retrieved = search(
         question,
@@ -93,7 +109,7 @@ def answer_question(
         candidate_k=max(top_k * 4, 20),
     )
 
-    strong = [r for r in retrieved if r.final_score >= min_score]
+    strong = [r for r in retrieved if _is_relevant(r, min_score, min_rerank_score)]
     if not strong:
         return QAResult(
             question=question,
