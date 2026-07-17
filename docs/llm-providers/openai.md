@@ -1,8 +1,5 @@
 # OpenAI
 
-<p align="center">
-  <img src="../.gitbook/assets/demo-placeholder.svg" alt="OpenAI setup — demo video coming soon" width="720" />
-</p>
 <p align="center"><sub><strong>🎬 Demo: OpenAI setup</strong> — placeholder (recording coming soon)</sub></p>
 
 ## Why OpenAI
@@ -13,7 +10,7 @@ Standard hosted models. Widely documented, well-behaved on structured outputs (J
 
 ### 1. Get a key
 
-1. Visit **[platform.openai.com/api-keys](https://platform.openai.com/api-keys)**.
+1. Visit [**platform.openai.com/api-keys**](https://platform.openai.com/api-keys).
 2. Sign up + add a payment method (no free tier — pay-as-you-go from the first call).
 3. Create a key — starts with `sk-proj-...` or `sk-...`.
 
@@ -34,12 +31,12 @@ python manage.py runserver
 
 ## Model choices
 
-| Model | Approx. cost per 1000 questions | Use case |
-|---|---|---|
-| `gpt-4o` | ~$5 | Highest quality, full GPT-4 class |
-| `gpt-4o-mini` | **~$0.30** | Best price/performance in the OpenAI catalog |
-| `gpt-4-turbo` | ~$10 | Older, more expensive — usually skip |
-| `gpt-3.5-turbo` | ~$0.10 | Cheap but weaker on refusal + citation format |
+| Model           | Approx. cost per 1000 questions | Use case                                      |
+| --------------- | ------------------------------- | --------------------------------------------- |
+| `gpt-4o`        | \~$5                            | Highest quality, full GPT-4 class             |
+| `gpt-4o-mini`   | **\~$0.30**                     | Best price/performance in the OpenAI catalog  |
+| `gpt-4-turbo`   | \~$10                           | Older, more expensive — usually skip          |
+| `gpt-3.5-turbo` | \~$0.10                         | Cheap but weaker on refusal + citation format |
 
 For this project, `gpt-4o-mini` is the go-to.
 

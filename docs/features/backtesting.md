@@ -1,8 +1,5 @@
 # Backtesting
 
-<p align="center">
-  <img src="../.gitbook/assets/demo-placeholder.svg" alt="Backtesting — demo video coming soon" width="720" />
-</p>
 <p align="center"><sub><strong>🎬 Demo: Backtesting</strong> — placeholder (recording coming soon)</sub></p>
 
 ## What it is
@@ -41,15 +38,15 @@ A strategy backtesting engine — build a trading rule, run it against historica
 
 ### Interpreting the results
 
-| Metric | What to look for |
-|---|---|
-| **Total return** | Absolute % over the window |
-| **CAGR** | Annualized — comparable across timeframes |
-| **Max drawdown** | Worst peak-to-trough loss — pain tolerance |
-| **Sharpe ratio** | Return per unit of volatility — > 1.0 is decent |
-| **Win rate** | % of trades profitable |
-| **Avg P/L per trade** | Small edge × many trades > large edge × few trades? |
-| **Trade count** | Statistical significance — < 30 trades is anecdote, not evidence |
+| Metric                | What to look for                                                 |
+| --------------------- | ---------------------------------------------------------------- |
+| **Total return**      | Absolute % over the window                                       |
+| **CAGR**              | Annualized — comparable across timeframes                        |
+| **Max drawdown**      | Worst peak-to-trough loss — pain tolerance                       |
+| **Sharpe ratio**      | Return per unit of volatility — > 1.0 is decent                  |
+| **Win rate**          | % of trades profitable                                           |
+| **Avg P/L per trade** | Small edge × many trades > large edge × few trades?              |
+| **Trade count**       | Statistical significance — < 30 trades is anecdote, not evidence |
 
 ## Under the hood
 

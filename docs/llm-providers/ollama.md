@@ -1,8 +1,5 @@
 # Ollama (local)
 
-<p align="center">
-  <img src="../.gitbook/assets/demo-placeholder.svg" alt="Ollama setup — demo video coming soon" width="720" />
-</p>
 <p align="center"><sub><strong>🎬 Demo: Ollama setup</strong> — placeholder (recording coming soon)</sub></p>
 
 ## Why Ollama
@@ -16,6 +13,7 @@ The tradeoff — smaller/quantized models mean **measurably lower quality** than
 ### 1. Install Ollama
 
 **macOS / Linux**:
+
 ```bash
 curl -fsSL https://ollama.com/install.sh | sh
 ```
@@ -60,21 +58,21 @@ python manage.py runserver
 
 ## Recommended models for this project
 
-| Model | Params | Disk | Notes |
-|---|---|---|---|
-| `llama3.1:8b` | 8B | ~5 GB | Best all-round on a laptop |
-| `qwen2.5:7b` | 7B | ~4.5 GB | Strong at structured JSON output |
-| `mistral:7b` | 7B | ~4 GB | Fast, competitive |
-| `phi3:14b` | 14B | ~8 GB | Microsoft's larger open model |
-| `llama3.1:70b` | 70B | ~40 GB | Only if you have GPU or heavy RAM |
+| Model          | Params | Disk     | Notes                             |
+| -------------- | ------ | -------- | --------------------------------- |
+| `llama3.1:8b`  | 8B     | \~5 GB   | Best all-round on a laptop        |
+| `qwen2.5:7b`   | 7B     | \~4.5 GB | Strong at structured JSON output  |
+| `mistral:7b`   | 7B     | \~4 GB   | Fast, competitive                 |
+| `phi3:14b`     | 14B    | \~8 GB   | Microsoft's larger open model     |
+| `llama3.1:70b` | 70B    | \~40 GB  | Only if you have GPU or heavy RAM |
 
 ## Performance expectations
 
 On a modern laptop CPU (no GPU):
 
-* First response: ~2–3 seconds (model warm-up)
-* Steady-state: ~5–15 tokens/second
-* A typical Filings answer (~200 tokens): **20–40 seconds**
+* First response: \~2–3 seconds (model warm-up)
+* Steady-state: \~5–15 tokens/second
+* A typical Filings answer (\~200 tokens): **20–40 seconds**
 
 With a GPU: 5–10× faster.
 

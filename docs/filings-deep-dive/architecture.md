@@ -1,8 +1,5 @@
 # Architecture
 
-<p align="center">
-  <img src="../.gitbook/assets/demo-placeholder.svg" alt="Filings Architecture — walkthrough video coming soon" width="720" />
-</p>
 <p align="center"><sub><strong>🎬 Walkthrough: Filings Architecture</strong> — placeholder (recording coming soon)</sub></p>
 
 ## The whole system in one diagram
@@ -76,7 +73,7 @@ The `/ask` and `/search` endpoints only read from the DB — they never fetch fr
 
 The `search()` function accepts `use_hybrid` and `use_rerank` booleans. All four combinations work — dense-only, dense+BM25, dense+rerank, or the full stack.
 
-**Why this matters:** you can produce real A/B numbers. IDEA.md says *"every change is a measured experiment with a before/after number"* — toggleability is the substrate that makes that eval work.
+**Why this matters:** you can produce real A/B numbers. IDEA.md says _"every change is a measured experiment with a before/after number"_ — toggleability is the substrate that makes that eval work.
 
 ### 3. The LLM is behind an interface. `qa.py` and `agent.py` never name a vendor.
 
@@ -111,7 +108,7 @@ Chunk      text · token_count · char_start · char_end · order
 * **Company** is a filter (users ask about Apple, not CIK 0000320193).
 * **Filing** is the citation unit (`Apple 10-K filed 2024-11-01`).
 * **Section** is a semantic filter (`Risk Factors`, `MD&A`, …).
-* **Chunk** is the retrieval unit (~400 tokens each, embedded, scored).
+* **Chunk** is the retrieval unit (\~400 tokens each, embedded, scored).
 
 See [Ingestion Pipeline](ingestion.md) for the full ingest flow and [Hybrid Retrieval + Rerank](retrieval.md) for how these rows get searched.
 
@@ -126,41 +123,10 @@ sims   = matrix @ q_vec                   # cosine (both are unit vectors)
 top    = np.argsort(-sims)[:top_k]
 ```
 
-At portfolio scale (~10k chunks, ~15 MB RAM), this is faster than any dedicated vector service — no network hop, no second data store to sync. Migration to `pgvector` is ~50 lines of code when the corpus grows past 50k chunks.
+At portfolio scale (\~10k chunks, \~15 MB RAM), this is faster than any dedicated vector service — no network hop, no second data store to sync. Migration to `pgvector` is \~50 lines of code when the corpus grows past 50k chunks.
 
 See [Retrieval](retrieval.md) for the full story.
 
 ## What each page in this section covers
 
-<table data-view="cards">
-<thead>
-  <tr><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr>
-</thead>
-<tbody>
-  <tr>
-    <td><strong>Ingestion Pipeline</strong></td>
-    <td>EDGAR → parse → chunk → embed → store. Rate limits, HTML section detection, chunker tradeoffs.</td>
-    <td><a href="ingestion.md">ingestion.md</a></td>
-  </tr>
-  <tr>
-    <td><strong>Retrieval + Rerank</strong></td>
-    <td>Dense cosine, BM25, Reciprocal Rank Fusion, cross-encoder rerank — and how they compose.</td>
-    <td><a href="retrieval.md">retrieval.md</a></td>
-  </tr>
-  <tr>
-    <td><strong>Grounded Generation</strong></td>
-    <td>The QA prompt, citation validation, refusal behavior.</td>
-    <td><a href="grounded-generation.md">grounded-generation.md</a></td>
-  </tr>
-  <tr>
-    <td><strong>The Agentic Loop</strong></td>
-    <td>Query decomposition, per-sub-Q retrieval, synthesis with citation remapping.</td>
-    <td><a href="agent.md">agent.md</a></td>
-  </tr>
-  <tr>
-    <td><strong>Evaluation Harness</strong></td>
-    <td>Gold sets, metrics, A/B toggles, judge calibration.</td>
-    <td><a href="evals.md">evals.md</a></td>
-  </tr>
-</tbody>
-</table>
+<table data-view="cards"><thead><tr><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody><tr><td><strong>Ingestion Pipeline</strong></td><td>EDGAR → parse → chunk → embed → store. Rate limits, HTML section detection, chunker tradeoffs.</td><td><a href="ingestion.md">ingestion.md</a></td></tr><tr><td><strong>Retrieval + Rerank</strong></td><td>Dense cosine, BM25, Reciprocal Rank Fusion, cross-encoder rerank — and how they compose.</td><td><a href="retrieval.md">retrieval.md</a></td></tr><tr><td><strong>Grounded Generation</strong></td><td>The QA prompt, citation validation, refusal behavior.</td><td><a href="grounded-generation.md">grounded-generation.md</a></td></tr><tr><td><strong>The Agentic Loop</strong></td><td>Query decomposition, per-sub-Q retrieval, synthesis with citation remapping.</td><td><a href="agent.md">agent.md</a></td></tr><tr><td><strong>Evaluation Harness</strong></td><td>Gold sets, metrics, A/B toggles, judge calibration.</td><td><a href="evals.md">evals.md</a></td></tr></tbody></table>

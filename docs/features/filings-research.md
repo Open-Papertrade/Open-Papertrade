@@ -1,8 +1,5 @@
 # Filings Research Analyst
 
-<p align="center">
-  <img src="../.gitbook/assets/demo-placeholder.svg" alt="Filings Research Analyst — demo video coming soon" width="720" />
-</p>
 <p align="center"><sub><strong>🎬 Demo: Filings Research Analyst</strong> — placeholder (recording coming soon)</sub></p>
 
 ## What it is
@@ -13,15 +10,15 @@ Not another "chat with your PDF" — this system is layered, measured, and groun
 
 ## What makes it different
 
-| Property | What it means |
-|---|---|
-| **Cited** | Every factual sentence carries a `[S<n>]` marker pointing to the exact passage in the source filing. |
-| **Verifiable** | Click any citation → jumps to the filing on sec.gov, opened to the source URL. |
-| **Refusal-first** | If retrieval scores below threshold, the system declines with a fixed string. No polite fabrication. |
-| **Layered retrieval** | Dense embeddings + BM25 (RRF fusion) + cross-encoder rerank — each layer toggleable, each measurable. |
+| Property                | What it means                                                                                                                             |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| **Cited**               | Every factual sentence carries a `[S<n>]` marker pointing to the exact passage in the source filing.                                      |
+| **Verifiable**          | Click any citation → jumps to the filing on sec.gov, opened to the source URL.                                                            |
+| **Refusal-first**       | If retrieval scores below threshold, the system declines with a fixed string. No polite fabrication.                                      |
+| **Layered retrieval**   | Dense embeddings + BM25 (RRF fusion) + cross-encoder rerank — each layer toggleable, each measurable.                                     |
 | **Agent decomposition** | Comparison questions ("Compare AAPL and NVDA on X") get decomposed into per-entity sub-questions, retrieved separately, then synthesized. |
-| **Provider-agnostic** | The LLM interface has six adapters — Anthropic, OpenAI, OpenRouter, Mistral, Ollama, generic OpenAI-compatible. |
-| **Measured** | Ships with an eval harness — recall@k, MRR, faithfulness, refusal accuracy. |
+| **Provider-agnostic**   | The LLM interface has six adapters — Anthropic, OpenAI, OpenRouter, Mistral, Ollama, generic OpenAI-compatible.                           |
+| **Measured**            | Ships with an eval harness — recall@k, MRR, faithfulness, refusal accuracy.                                                               |
 
 ## What you can do
 
@@ -42,7 +39,7 @@ The corpus starts **empty**. You add content two ways:
 
 1. Find a filing at [sec.gov](https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany) — copy the URL of the primary `.htm` document.
 2. Sidebar → **Filings Research** → paste into the "Add a filing by URL" box → click **Ingest**.
-3. Watch the job status update in real time (`pending → running → success`, ~30–120 seconds).
+3. Watch the job status update in real time (`pending → running → success`, \~30–120 seconds).
 4. The filing appears in the "Ingested filings" list below.
 
 **Method B — Bulk seed via CLI**
@@ -77,20 +74,24 @@ Click a citation → the exact filing opens in a new tab. That's the one-click v
 ## Sample questions to try
 
 Simple retrieval:
-> *"What are the largest risk factors disclosed in this filing?"*
+
+> _"What are the largest risk factors disclosed in this filing?"_
 
 Section-specific:
-> *"Summarize the Management's Discussion & Analysis section."*
+
+> _"Summarize the Management's Discussion & Analysis section."_
 
 Refusal test:
-> *"Did the company acquire LithGold Corporation in 2024?"*
-> (Answer: **declines** — no such acquisition exists.)
+
+> _"Did the company acquire LithGold Corporation in 2024?"_ (Answer: **declines** — no such acquisition exists.)
 
 Agent mode (turn Agentic on):
-> *"Compare Apple's and NVIDIA's approach to R&D investment."*
+
+> _"Compare Apple's and NVIDIA's approach to R\&D investment."_
 
 Time-series (agent mode, multiple years ingested):
-> *"How has Tesla's risk-factor language changed from 2021 to 2024?"*
+
+> _"How has Tesla's risk-factor language changed from 2021 to 2024?"_
 
 ## Under the hood
 

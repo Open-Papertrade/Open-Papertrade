@@ -1,55 +1,12 @@
-# LLM Providers — Overview
+# Overview
 
-<p align="center">
-  <img src="../.gitbook/assets/demo-placeholder.svg" alt="LLM Providers — demo video coming soon" width="720" />
-</p>
 <p align="center"><sub><strong>🎬 Walkthrough: Switching providers</strong> — placeholder (recording coming soon)</sub></p>
 
 ## Six providers, one interface
 
 Every AI feature — AI Coach, chart analysis, Filings Research — talks to LLMs through a single interface (`backend/filings/services/llm/`). Six adapters ship out of the box:
 
-<table data-view="cards">
-<thead>
-  <tr>
-    <th></th>
-    <th></th>
-    <th data-hidden data-card-target data-type="content-ref"></th>
-  </tr>
-</thead>
-<tbody>
-  <tr>
-    <td><strong>🌐 OpenRouter (recommended)</strong></td>
-    <td>One key, hundreds of models — Claude, GPT, Mistral, Llama, Gemini, DeepSeek. Best for cost/quality A/B testing.</td>
-    <td><a href="openrouter.md">openrouter.md</a></td>
-  </tr>
-  <tr>
-    <td><strong>🤖 Anthropic</strong></td>
-    <td>Direct API. Strong instruction-following, honest refusals.</td>
-    <td><a href="anthropic.md">anthropic.md</a></td>
-  </tr>
-  <tr>
-    <td><strong>💬 OpenAI</strong></td>
-    <td>Standard hosted models. Widely documented, well-behaved on structured outputs.</td>
-    <td><a href="openai.md">openai.md</a></td>
-  </tr>
-  <tr>
-    <td><strong>🇫🇷 Mistral</strong></td>
-    <td>Direct Mistral API. Cheaper than GPT-4 class for many tasks.</td>
-    <td><a href="mistral.md">mistral.md</a></td>
-  </tr>
-  <tr>
-    <td><strong>🦙 Ollama (local)</strong></td>
-    <td>Fully local, zero cost. Ships with pull-and-run models.</td>
-    <td><a href="ollama.md">ollama.md</a></td>
-  </tr>
-  <tr>
-    <td><strong>⚙️ Local OpenAI-compatible</strong></td>
-    <td>LM Studio, vLLM, llama.cpp-server — any OpenAI-compatible endpoint.</td>
-    <td><a href="local.md">local.md</a></td>
-  </tr>
-</tbody>
-</table>
+<table data-view="cards"><thead><tr><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody><tr><td><strong>🌐 OpenRouter (recommended)</strong></td><td>One key, hundreds of models — Claude, GPT, Mistral, Llama, Gemini, DeepSeek. Best for cost/quality A/B testing.</td><td><a href="openrouter.md">openrouter.md</a></td></tr><tr><td><strong>🤖 Anthropic</strong></td><td>Direct API. Strong instruction-following, honest refusals.</td><td><a href="anthropic.md">anthropic.md</a></td></tr><tr><td><strong>💬 OpenAI</strong></td><td>Standard hosted models. Widely documented, well-behaved on structured outputs.</td><td><a href="openai.md">openai.md</a></td></tr><tr><td><strong>🇫🇷 Mistral</strong></td><td>Direct Mistral API. Cheaper than GPT-4 class for many tasks.</td><td><a href="mistral.md">mistral.md</a></td></tr><tr><td><strong>🦙 Ollama (local)</strong></td><td>Fully local, zero cost. Ships with pull-and-run models.</td><td><a href="ollama.md">ollama.md</a></td></tr><tr><td><strong>⚙️ Local OpenAI-compatible</strong></td><td>LM Studio, vLLM, llama.cpp-server — any OpenAI-compatible endpoint.</td><td><a href="local.md">local.md</a></td></tr></tbody></table>
 
 ## How the abstraction works
 
@@ -101,7 +58,7 @@ class BaseLLMProvider(ABC):
 
 Example: Anthropic's prompt caching, OpenAI's `response_format=json_schema`, Ollama's `num_ctx` — all supported via `**kwargs` without the interface knowing about them. Providers that don't understand a kwarg silently ignore it.
 
-This is the deliberate choice to **avoid the lowest-common-denominator prison** — the interface exposes what every provider *does*, not the intersection of what every provider *supports*.
+This is the deliberate choice to **avoid the lowest-common-denominator prison** — the interface exposes what every provider _does_, not the intersection of what every provider _supports_.
 
 ## Model resolution priority
 
@@ -135,6 +92,7 @@ class LLMResponse:
 ```
 
 This means:
+
 * Cost accounting works uniformly.
 * Debug logs are consistent.
 * An admin dashboard can graph tokens/latency/cost by provider.
@@ -191,13 +149,13 @@ curl -X POST http://localhost:8000/api/filings/ask/ \
 
 ## Which provider should you actually use?
 
-| Your situation | Pick |
-|---|---|
-| Want to try many models with one key | **OpenRouter** |
-| Care most about honest refusal / instruction-following | **Anthropic** |
-| Standard, well-documented, no surprises | **OpenAI** |
-| Budget-focused, EU-based | **Mistral** |
-| No budget at all / privacy-critical / offline | **Ollama** or **Local** |
+| Your situation                                         | Pick                    |
+| ------------------------------------------------------ | ----------------------- |
+| Want to try many models with one key                   | **OpenRouter**          |
+| Care most about honest refusal / instruction-following | **Anthropic**           |
+| Standard, well-documented, no surprises                | **OpenAI**              |
+| Budget-focused, EU-based                               | **Mistral**             |
+| No budget at all / privacy-critical / offline          | **Ollama** or **Local** |
 
 **My recommendation for first-time setup:** OpenRouter with `anthropic/claude-3.5-sonnet` if you have $5 in credit, else `meta-llama/llama-3.1-8b-instruct:free` (or check openrouter.ai for currently-active free slugs).
 

@@ -1,9 +1,6 @@
 # AI Coach
 
-<p align="center">
-  <img src="../.gitbook/assets/demo-placeholder.svg" alt="AI Coach — demo video coming soon" width="720" />
-</p>
-<p align="center"><sub><strong>🎬 Demo: AI Coach</strong> — placeholder (recording coming soon)</sub></p>
+<figure><img src="../.gitbook/assets/ai-coach_compressed.gif" alt=""><figcaption></figcaption></figure>
 
 ## What it is
 
@@ -30,6 +27,7 @@ Sidebar → **AI Coach**.
 **Overview** — quick stats + top-line coach observations.
 
 **Patterns** — categorized behavioral patterns (danger / warning / positive), each with:
+
 * Description of the pattern.
 * Recent examples from your trades.
 * Suggestion for what to do differently.

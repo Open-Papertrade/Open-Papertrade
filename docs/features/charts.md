@@ -1,9 +1,6 @@
 # Charts & Technical Analysis
 
-<p align="center">
-  <img src="../.gitbook/assets/demo-placeholder.svg" alt="Charts — demo video coming soon" width="720" />
-</p>
-<p align="center"><sub><strong>🎬 Demo: Charts &amp; Technical Analysis</strong> — placeholder (recording coming soon)</sub></p>
+
 
 ## What it is
 

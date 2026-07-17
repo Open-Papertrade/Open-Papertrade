@@ -1,8 +1,5 @@
 # Copy Trading
 
-<p align="center">
-  <img src="../.gitbook/assets/demo-placeholder.svg" alt="Copy Trading — demo video coming soon" width="720" />
-</p>
 <p align="center"><sub><strong>🎬 Demo: Copy Trading</strong> — placeholder (recording coming soon)</sub></p>
 
 ## What it is

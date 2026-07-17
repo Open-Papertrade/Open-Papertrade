@@ -1,8 +1,5 @@
 # Mistral
 
-<p align="center">
-  <img src="../.gitbook/assets/demo-placeholder.svg" alt="Mistral setup — demo video coming soon" width="720" />
-</p>
 <p align="center"><sub><strong>🎬 Demo: Mistral setup</strong> — placeholder (recording coming soon)</sub></p>
 
 ## Why Mistral
@@ -13,7 +10,7 @@ Direct Mistral API — EU-hosted, cheaper than GPT-4 class for many tasks, has a
 
 ### 1. Get a key
 
-1. Visit **[console.mistral.ai](https://console.mistral.ai/)**.
+1. Visit [**console.mistral.ai**](https://console.mistral.ai/).
 2. Sign up (free tier available).
 3. Create an API key.
 
@@ -34,12 +31,12 @@ python manage.py runserver
 
 ## Model choices
 
-| Model | Approx. cost per 1000 questions | Use case |
-|---|---|---|
-| `mistral-large-latest` | ~$1.20 | Best Mistral quality |
-| `mistral-small-latest` | ~$0.20 | Fast + cheap |
-| `open-mixtral-8x22b` | ~$0.60 | Open-weights, MoE |
-| `open-mistral-7b` | ~$0.05 | Cheapest, weaker on refusal |
+| Model                  | Approx. cost per 1000 questions | Use case                    |
+| ---------------------- | ------------------------------- | --------------------------- |
+| `mistral-large-latest` | \~$1.20                         | Best Mistral quality        |
+| `mistral-small-latest` | \~$0.20                         | Fast + cheap                |
+| `open-mixtral-8x22b`   | \~$0.60                         | Open-weights, MoE           |
+| `open-mistral-7b`      | \~$0.05                         | Cheapest, weaker on refusal |
 
 ## Notes
 

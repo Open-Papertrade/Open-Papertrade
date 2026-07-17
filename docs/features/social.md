@@ -1,9 +1,6 @@
 # Leaderboard & Friends
 
-<p align="center">
-  <img src="../.gitbook/assets/demo-placeholder.svg" alt="Leaderboard & Friends — demo video coming soon" width="720" />
-</p>
-<p align="center"><sub><strong>🎬 Demo: Leaderboard &amp; Friends</strong> — placeholder (recording coming soon)</sub></p>
+<p align="center"><sub><strong>🎬 Demo: Leaderboard &#x26; Friends</strong> — placeholder (recording coming soon)</sub></p>
 
 ## What it is
 
@@ -37,12 +34,12 @@ Sidebar → **Friends**.
 
 Trading behavior earns XP. Sample achievements:
 
-| Achievement | Trigger |
-|---|---|
-| First Trade | Place any trade |
-| Diversified | Hold 10+ symbols across 3+ sectors |
-| Contrarian | Buy after 5% market drop |
-| Winning Streak | 5 profitable trades in a row |
+| Achievement    | Trigger                              |
+| -------------- | ------------------------------------ |
+| First Trade    | Place any trade                      |
+| Diversified    | Hold 10+ symbols across 3+ sectors   |
+| Contrarian     | Buy after 5% market drop             |
+| Winning Streak | 5 profitable trades in a row         |
 | Filings Reader | Ask 10 questions in Filings Research |
 
 XP accumulates → **Rank** progresses through named tiers (Novice → Analyst → Trader → Portfolio Manager → …).

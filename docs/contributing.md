@@ -1,8 +1,5 @@
-# Contributing
+# Contributing Guide
 
-<p align="center">
-  <img src=".gitbook/assets/demo-placeholder.svg" alt="Contributing walkthrough — demo video coming soon" width="720" />
-</p>
 <p align="center"><sub><strong>🎬 Walkthrough: How to contribute</strong> — placeholder (recording coming soon)</sub></p>
 
 We welcome contributors at all experience levels. This page is a lightweight overview; the authoritative source is [`CONTRIBUTING.md`](https://github.com/) in the repo root.
@@ -11,40 +8,7 @@ We welcome contributors at all experience levels. This page is a lightweight ove
 
 Some good first contributions, roughly by effort:
 
-<table>
-<thead>
-  <tr><th width="180">Effort</th><th>Ideas</th></tr>
-</thead>
-<tbody>
-  <tr>
-    <td><strong>Small</strong></td>
-    <td>
-      • Fix typos, improve error messages<br/>
-      • Add sample questions to the Filings UI<br/>
-      • Improve mobile responsiveness of a specific page<br/>
-      • Add a keyboard shortcut
-    </td>
-  </tr>
-  <tr>
-    <td><strong>Medium</strong></td>
-    <td>
-      • Grow the Filings eval gold sets (target 30 retrieval, 40 answer)<br/>
-      • Add a new backtesting indicator or pattern<br/>
-      • Improve the chunker (table-aware, sentence-boundary-snapping)<br/>
-      • Add a new LLM provider adapter
-    </td>
-  </tr>
-  <tr>
-    <td><strong>Large</strong></td>
-    <td>
-      • Migrate the vector store to pgvector (see IDEA.md §16)<br/>
-      • Add streaming responses to <code>/ask/</code><br/>
-      • Fine-tune a domain-adapted embedding model on filings text<br/>
-      • Build a Langfuse / Phoenix tracing integration
-    </td>
-  </tr>
-</tbody>
-</table>
+<table><thead><tr><th width="180">Effort</th><th>Ideas</th></tr></thead><tbody><tr><td><strong>Small</strong></td><td>• Fix typos, improve error messages<br>• Add sample questions to the Filings UI<br>• Improve mobile responsiveness of a specific page<br>• Add a keyboard shortcut</td></tr><tr><td><strong>Medium</strong></td><td>• Grow the Filings eval gold sets (target 30 retrieval, 40 answer)<br>• Add a new backtesting indicator or pattern<br>• Improve the chunker (table-aware, sentence-boundary-snapping)<br>• Add a new LLM provider adapter</td></tr><tr><td><strong>Large</strong></td><td>• Migrate the vector store to pgvector (see IDEA.md §16)<br>• Add streaming responses to <code>/ask/</code><br>• Fine-tune a domain-adapted embedding model on filings text<br>• Build a Langfuse / Phoenix tracing integration</td></tr></tbody></table>
 
 ## Development workflow
 
@@ -67,6 +31,7 @@ git checkout -b feature/short-description
 ```
 
 Branch naming:
+
 * `feature/…` — new features
 * `fix/…` — bug fixes
 * `docs/…` — documentation only

@@ -1,8 +1,5 @@
 # Paper Trading
 
-<p align="center">
-  <img src="../.gitbook/assets/demo-placeholder.svg" alt="Paper Trading — demo video coming soon" width="720" />
-</p>
 <p align="center"><sub><strong>🎬 Demo: Paper Trading</strong> — placeholder (recording coming soon)</sub></p>
 
 ## What it is
