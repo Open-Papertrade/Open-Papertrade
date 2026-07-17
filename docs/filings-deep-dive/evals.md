@@ -1,13 +1,8 @@
 # Evaluation Harness
 
-<p align="center">
-  <img src="../.gitbook/assets/demo-placeholder.svg" alt="Eval Harness — demo video coming soon" width="720" />
-</p>
-<p align="center"><sub><strong>🎬 Walkthrough: Running the eval</strong> — placeholder (recording coming soon)</sub></p>
-
 ## Why this matters more than the model
 
-IDEA.md is emphatic: *"Anyone can demo this. The résumé-proving part is measuring it."*
+IDEA.md is emphatic: _"Anyone can demo this. The résumé-proving part is measuring it."_
 
 Retrieval quality claims are meaningless without numbers behind them. This section describes the eval harness, its metrics, and how to run A/B experiments.
 
@@ -62,10 +57,10 @@ Both are **starter sets**. IDEA.md targets 30 and 40 respectively — growing th
 
 ### Retrieval metrics (`evals/metrics.py`)
 
-| Metric | Definition |
-|---|---|
-| **Recall@k** for k ∈ {1, 3, 5, 10} | Did the correct chunk appear in the top k? |
-| **MRR** (Mean Reciprocal Rank) | How high in the ranking did it appear? Rewards putting the right chunk at position 1, not just anywhere in the top 10. |
+| Metric                             | Definition                                                                                                             |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| **Recall@k** for k ∈ {1, 3, 5, 10} | Did the correct chunk appear in the top k?                                                                             |
+| **MRR** (Mean Reciprocal Rank)     | How high in the ranking did it appear? Rewards putting the right chunk at position 1, not just anywhere in the top 10. |
 
 Both computed the standard way — no cleverness.
 
@@ -73,11 +68,11 @@ Both computed the standard way — no cleverness.
 
 For each answer, an **LLM-as-judge** grades:
 
-| Field | What it means |
-|---|---|
-| `faithful` | Is every substantive claim supported by the retrieved sources? A refusal counts as faithful **iff** `should_decline=true`. |
-| `relevant` | Does the answer address the question and satisfy the rubric criteria? |
-| `hallucinated_claims` | Quoted substrings of unsupported claims. |
+| Field                 | What it means                                                                                                              |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `faithful`            | Is every substantive claim supported by the retrieved sources? A refusal counts as faithful **iff** `should_decline=true`. |
+| `relevant`            | Does the answer address the question and satisfy the rubric criteria?                                                      |
+| `hallucinated_claims` | Quoted substrings of unsupported claims.                                                                                   |
 
 Aggregated to:
 
@@ -90,7 +85,7 @@ Aggregated to:
 
 LLM-as-judge is **not free of bias**. Before quoting a number:
 
-1. Spot-check ~20 judgements against your own human labels.
+1. Spot-check \~20 judgements against your own human labels.
 2. If the judge is systematically lenient on one dimension, add explicit criteria to `judge.py::JUDGE_SYSTEM`.
 3. Keep the judge's `temperature=0.0` (already the default).
 
@@ -119,11 +114,11 @@ jq '.retrieval.recall_at_10' results_dense.json results_hybrid.json results_full
 
 Expected shape of the improvement (varies by corpus size and gold-set difficulty):
 
-| Configuration | recall@10 | faithfulness | refusal accuracy |
-|---|---|---|---|
-| Dense only | ~0.60 | ~0.75 | ~0.60 |
-| + BM25 hybrid | ~0.75 | ~0.82 | ~0.70 |
-| + Cross-encoder | **~0.85** | **~0.88** | **~0.85** |
+| Configuration   | recall@10  | faithfulness | refusal accuracy |
+| --------------- | ---------- | ------------ | ---------------- |
+| Dense only      | \~0.60     | \~0.75       | \~0.60           |
+| + BM25 hybrid   | \~0.75     | \~0.82       | \~0.70           |
+| + Cross-encoder | **\~0.85** | **\~0.88**   | **\~0.85**       |
 
 Those aren't hypothetical — they're the kind of before/after table the eval produces on the starter gold set. Your actual numbers will differ.
 
@@ -162,13 +157,11 @@ This is the whole payoff of the provider abstraction — you get a real cross-mo
 
 The current starter sets are enough to demonstrate the pipeline. To move from "demonstrated" to "measured":
 
-1. **Grow `retrieval_gold.json` to ~30 items.** Include harder questions:
+1. **Grow `retrieval_gold.json` to \~30 items.** Include harder questions:
    * Exact-string lookups (statute names, table values).
    * Paraphrase-heavy questions (dense should win).
    * Multi-section questions (test whether hybrid catches cross-section relevance).
-
-2. **Grow `answers_gold.json` to ~40 items with 50% `should_decline: true`.** Refusal-trap questions are the highest-signal gold items — they catch the exact failure mode that makes RAG systems dangerous.
-
+2. **Grow `answers_gold.json` to \~40 items with 50% `should_decline: true`.** Refusal-trap questions are the highest-signal gold items — they catch the exact failure mode that makes RAG systems dangerous.
 3. **Label 20 human-verified judgements** to calibrate the LLM judge before quoting numbers.
 
 ## Related

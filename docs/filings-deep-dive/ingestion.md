@@ -1,10 +1,5 @@
 # Ingestion Pipeline
 
-<p align="center">
-  <img src="../.gitbook/assets/demo-placeholder.svg" alt="Ingestion Pipeline — demo video coming soon" width="720" />
-</p>
-<p align="center"><sub><strong>🎬 Demo: Ingestion in action</strong> — placeholder (recording coming soon)</sub></p>
-
 ## Two entry points, one processing engine
 
 Ingestion has two triggers:
@@ -106,13 +101,13 @@ The `Host` header must match — `_get()` accepts `host_override='data.sec.gov'`
 
 * Item 1 → Business
 * Item 1A → Risk Factors
-* Item 7 → Management's Discussion and Analysis (MD&A)
+* Item 7 → Management's Discussion and Analysis (MD\&A)
 * … etc.
 
 ### The algorithm
 
 1. **Strip HTML → plain text** via BeautifulSoup. Preserves paragraph breaks; drops tags, scripts, styles.
-2. **Find section boundaries** — regex `^\s*item\s+(\d{1,2}[A-C]?)[\.\:\s]` at line starts (multiline). Matches "Item 7.", "Item 7A:", "ITEM  7 ".
+2. **Find section boundaries** — regex `^\s*item\s+(\d{1,2}[A-C]?)[\.\:\s]` at line starts (multiline). Matches "Item 7.", "Item 7A:", "ITEM 7 ".
 3. **Deduplicate** — 10-Ks mention "Item 1A" twice: once in the ToC, once at the actual section. Keep the **last** occurrence (that's the section body).
 4. **Split by position** — slice `text[pos_i : pos_i+1]` for each match.
 5. **Drop fragments** — anything under 200 chars is a stray ToC reference or artifact.
@@ -134,7 +129,7 @@ for i in range(0, len(tokens), step):
 
 ### Overlap
 
-The last 50 tokens of chunk N are the first 50 of chunk N+1. That's ~12.5% duplicated content in exchange for robustness — sentences that span a boundary appear in at least one chunk.
+The last 50 tokens of chunk N are the first 50 of chunk N+1. That's \~12.5% duplicated content in exchange for robustness — sentences that span a boundary appear in at least one chunk.
 
 ### Preserved offsets
 
@@ -162,7 +157,7 @@ vecs = model.encode(
 
 ### Model caching
 
-Loading `all-MiniLM-L6-v2` costs ~2 seconds and ~120 MB RAM. `_MODEL_CACHE[name] = model` keeps it alive across every call in the process. First ingestion pays the load cost once; all subsequent calls are free.
+Loading `all-MiniLM-L6-v2` costs \~2 seconds and \~120 MB RAM. `_MODEL_CACHE[name] = model` keeps it alive across every call in the process. First ingestion pays the load cost once; all subsequent calls are free.
 
 ### Batch encoding
 
@@ -176,10 +171,10 @@ Every chunk from every section goes into a **single** `model.encode(list_of_text
 
 Each vector: `float32` (4 bytes) × 384 dims = **1.5 KB**. Stored as raw bytes in `Chunk.embedding` (a `BinaryField`). Comparison vs. JSON:
 
-| Format | Bytes per chunk | 10k chunks |
-|---|---|---|
-| `float32` bytes | 1,536 | 15 MB |
-| JSON string | ~9,000 | 90 MB |
+| Format          | Bytes per chunk | 10k chunks |
+| --------------- | --------------- | ---------- |
+| `float32` bytes | 1,536           | 15 MB      |
+| JSON string     | \~9,000         | 90 MB      |
 
 ## Stage 6 — Store atomically
 
@@ -194,7 +189,7 @@ with transaction.atomic():
 ```
 
 * **Atomic** — if embedding fails halfway, no partial write. Retry cleanly.
-* **`bulk_create`** — one INSERT instead of 400 round-trips. ~100ms vs. ~80 seconds.
+* **`bulk_create`** — one INSERT instead of 400 round-trips. \~100ms vs. \~80 seconds.
 
 ## Stage 7 — Housekeeping
 
@@ -214,13 +209,13 @@ The BM25 cache is per-process in-memory. Invalidating it forces the next BM25 qu
 
 For one 10-K:
 
-| Stage | Time |
-|---|---|
-| 1–2. Identity + fetch | 3–10s |
-| 3. Parse HTML | 1–3s |
-| 4. Chunk | < 1s |
-| **5. Embed** (CPU) | **20–100s** ← the tall pole |
-| 6. Store | < 1s |
+| Stage                 | Time                        |
+| --------------------- | --------------------------- |
+| 1–2. Identity + fetch | 3–10s                       |
+| 3. Parse HTML         | 1–3s                        |
+| 4. Chunk              | < 1s                        |
+| **5. Embed** (CPU)    | **20–100s** ← the tall pole |
+| 6. Store              | < 1s                        |
 
 Total: **30–120 seconds per filing**. Which is exactly why ingestion must never be in the request path.
 

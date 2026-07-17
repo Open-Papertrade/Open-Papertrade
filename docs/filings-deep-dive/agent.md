@@ -1,10 +1,5 @@
 # The Agentic Loop
 
-<p align="center">
-  <img src="../.gitbook/assets/demo-placeholder.svg" alt="Agentic Loop — demo video coming soon" width="720" />
-</p>
-<p align="center"><sub><strong>🎬 Walkthrough: The Agentic Loop</strong> — placeholder (recording coming soon)</sub></p>
-
 ## Why an agent at all
 
 Single-shot RAG works beautifully when:
@@ -15,14 +10,14 @@ Single-shot RAG works beautifully when:
 
 It **silently fails** on:
 
-| Failure mode | Example |
-|---|---|
-| Multi-entity comparisons | *"Compare Apple's and NVIDIA's approach to R&D"* |
-| Time-series questions | *"How has Tesla's risk language changed 2021 → 2024?"* |
-| Compositional questions | *"Which of these three has the most concentrated supply-chain risk?"* |
-| Multi-hop dependencies | *"Does Apple mention any of the regulatory risks NVIDIA highlighted?"* |
+| Failure mode             | Example                                                                |
+| ------------------------ | ---------------------------------------------------------------------- |
+| Multi-entity comparisons | _"Compare Apple's and NVIDIA's approach to R\&D"_                      |
+| Time-series questions    | _"How has Tesla's risk language changed 2021 → 2024?"_                 |
+| Compositional questions  | _"Which of these three has the most concentrated supply-chain risk?"_  |
+| Multi-hop dependencies   | _"Does Apple mention any of the regulatory risks NVIDIA highlighted?"_ |
 
-The root cause: **a single retrieval has a bounded budget** (top-K chunks). If a question requires evidence from two documents in two different frames, whichever is more strongly represented dominates and the other gets 0–1 chunks. The LLM then either writes a lopsided answer or *hallucinates* the missing side to be helpful.
+The root cause: **a single retrieval has a bounded budget** (top-K chunks). If a question requires evidence from two documents in two different frames, whichever is more strongly represented dominates and the other gets 0–1 chunks. The LLM then either writes a lopsided answer or _hallucinates_ the missing side to be helpful.
 
 The agent fixes this by **allocating retrieval budget deliberately**.
 
@@ -56,7 +51,7 @@ Output shape:
 ]
 ```
 
-Key property — the plan is **visible in the response**. The frontend surfaces it as an "Agent trace" disclosure, so users can see *why* the answer covers what it covers.
+Key property — the plan is **visible in the response**. The frontend surfaces it as an "Agent trace" disclosure, so users can see _why_ the answer covers what it covers.
 
 ## Stage 2 — Execute (sub-answers)
 
@@ -96,7 +91,7 @@ Two deliberate design choices in the synthesizer:
 
 ### The synthesizer sees only sub-answers, not raw sources
 
-If the synthesizer saw all the retrieved chunks, it might "helpfully" combine evidence in ways the sub-QA already ruled out — inventing claims by cross-referencing. Giving it only the *already-cited* sub-answers means it can only rearrange what was already grounded. **New facts cannot appear at the synthesis step.**
+If the synthesizer saw all the retrieved chunks, it might "helpfully" combine evidence in ways the sub-QA already ruled out — inventing claims by cross-referencing. Giving it only the _already-cited_ sub-answers means it can only rearrange what was already grounded. **New facts cannot appear at the synthesis step.**
 
 ### Citation index remapping
 
@@ -104,7 +99,7 @@ Each sub-QA numbers its citations locally: `[S1]`, `[S2]`, `[S3]`. In the merged
 
 * sub-Q1's `[S1]` → global `[S1]`
 * sub-Q1's `[S2]` → global `[S2]`
-* sub-Q2's `[S1]` → global `[S3]`   (starts after sub-Q1's max)
+* sub-Q2's `[S1]` → global `[S3]` (starts after sub-Q1's max)
 * sub-Q2's `[S2]` → global `[S4]`
 * …
 
@@ -145,6 +140,7 @@ LLM: "Actually let me refine that" → search
 ```
 
 Powerful but:
+
 * **Unbounded cost.** No hard cap on iterations. One question can spin into 5, 10, 20 LLM calls.
 * **Opaque.** The plan emerges — you can't tell the user what will happen until it has.
 * **Hard to debug.** If the answer is wrong, was it wrong at step 3 or step 7?
@@ -167,16 +163,16 @@ For financial filings — a bounded, well-structured domain — decomposition ma
 
 ## When to turn agent mode on
 
-| Question shape | Agent mode? | Why |
-|---|---|---|
-| "What are Apple's risk factors?" | ❌ Off | Single retrieval works fine. Agent adds 2 LLM calls for no benefit. |
-| "Summarize Tesla's MD&A." | ❌ Off | Single company, single section. |
-| "Compare A and B" (any two entities) | ✅ On | Retrieval budget split problem. |
-| "How has X changed 2021→2024?" | ✅ On | Time-series needs one retrieval per year. |
-| "Which of these three has the most X?" | ✅ On | Compositional judgment across entities. |
-| "Does A mention what B mentioned?" | ✅ On | Multi-hop dependency. |
+| Question shape                         | Agent mode? | Why                                                                 |
+| -------------------------------------- | ----------- | ------------------------------------------------------------------- |
+| "What are Apple's risk factors?"       | ❌ Off       | Single retrieval works fine. Agent adds 2 LLM calls for no benefit. |
+| "Summarize Tesla's MD\&A."             | ❌ Off       | Single company, single section.                                     |
+| "Compare A and B" (any two entities)   | ✅ On        | Retrieval budget split problem.                                     |
+| "How has X changed 2021→2024?"         | ✅ On        | Time-series needs one retrieval per year.                           |
+| "Which of these three has the most X?" | ✅ On        | Compositional judgment across entities.                             |
+| "Does A mention what B mentioned?"     | ✅ On        | Multi-hop dependency.                                               |
 
-**Cost.** Single-shot: ~1 LLM call. Agent: 3–5. Roughly 4× more, but still fractions of a cent per query on any provider.
+**Cost.** Single-shot: \~1 LLM call. Agent: 3–5. Roughly 4× more, but still fractions of a cent per query on any provider.
 
 **Latency.** Single-shot: 2–4 seconds. Agent: 6–15 seconds. Users self-select via the UI toggle — they know they're opting into a bigger workload for a harder question.
 
@@ -186,7 +182,7 @@ The agent isn't the magic ingredient that makes RAG smart. **The magic is in the
 
 The agent is a targeted fix for one specific class of failure — **questions whose answers live in multiple retrieval frames** — that no amount of retrieval tuning can solve. It solves that class by allocating retrieval budget deliberately, scoping each sub-search with metadata filters, and preserving citations through synthesis.
 
-Retrieval finds passages. The agent decides *where to look*. Different jobs, both necessary once questions get harder than "look up X."
+Retrieval finds passages. The agent decides _where to look_. Different jobs, both necessary once questions get harder than "look up X."
 
 ## Related
 

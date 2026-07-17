@@ -1,10 +1,5 @@
 # Grounded Generation
 
-<p align="center">
-  <img src="../.gitbook/assets/demo-placeholder.svg" alt="Grounded Generation — demo video coming soon" width="720" />
-</p>
-<p align="center"><sub><strong>🎬 Walkthrough: Grounded Generation</strong> — placeholder (recording coming soon)</sub></p>
-
 ## The QA pipeline
 
 `services/qa.py::answer_question` is the single-question RAG loop:
@@ -55,11 +50,11 @@ Five things the prompt does, in order of importance:
 
 ### 1.1 Names the persona
 
-*"Careful financial research analyst"* — precise, quote-driven, unwilling to speculate. This affects tone and refusal willingness measurably. A generic "helpful assistant" persona gets ~20% lower refusal accuracy in our eval.
+_"Careful financial research analyst"_ — precise, quote-driven, unwilling to speculate. This affects tone and refusal willingness measurably. A generic "helpful assistant" persona gets \~20% lower refusal accuracy in our eval.
 
 ### 1.2 Restricts the knowledge source
 
-*"Use ONLY the numbered SOURCES."* Not "prefer" — **only**. This is the single biggest lever for grounding.
+_"Use ONLY the numbered SOURCES."_ Not "prefer" — **only**. This is the single biggest lever for grounding.
 
 ### 1.3 Specifies the citation form
 
@@ -67,7 +62,7 @@ Five things the prompt does, in order of importance:
 
 ### 1.4 Provides the refusal script verbatim
 
-*"If the sources do not clearly answer the question, respond exactly with..."* — giving the model an exact string is more reliable than "decline"; the model will actually reproduce it. This is why the refusal text matches character-for-character every time.
+_"If the sources do not clearly answer the question, respond exactly with..."_ — giving the model an exact string is more reliable than "decline"; the model will actually reproduce it. This is why the refusal text matches character-for-character every time.
 
 ### 1.5 Forces JSON output
 
@@ -97,11 +92,11 @@ Two reasons for the pre-LLM refusal:
 
 Different retrieval layers produce scores on **different scales**. A single numeric threshold can't work across all of them:
 
-| Layer | Score range | Threshold used |
-|---|---|---|
-| Dense (cosine) | [0, 1] | `>= 0.15` |
-| RRF fusion sum | ~[0, 0.05] | Any positive value = signal |
-| Cross-encoder rerank | ~[-10, +10] | `>= -5.0` |
+| Layer                | Score range   | Threshold used              |
+| -------------------- | ------------- | --------------------------- |
+| Dense (cosine)       | \[0, 1]       | `>= 0.15`                   |
+| RRF fusion sum       | \~\[0, 0.05]  | Any positive value = signal |
+| Cross-encoder rerank | \~\[-10, +10] | `>= -5.0`                   |
 
 The `_is_relevant()` helper in `qa.py` branches on which score is populated:
 
@@ -132,6 +127,7 @@ Net sales for fiscal 2024 were $391 billion, an increase of...
 ```
 
 Every source has:
+
 * An index `[S1]`, `[S2]`, ...
 * Provenance line — ticker, form, filed date, section name.
 * The full chunk text.
@@ -198,7 +194,7 @@ def answer_question(question, *, filters, use_hybrid, use_rerank, ...):
 
 ## Why refusal is a feature
 
-*"I don't have enough information in the provided filings to answer that."*
+_"I don't have enough information in the provided filings to answer that."_
 
 This one line is the differentiator over 90% of chat-with-your-PDF demos. IDEA.md is explicit about it: **"prefer refusal over hallucination"** is the core design principle.
 

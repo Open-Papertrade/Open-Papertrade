@@ -1,10 +1,5 @@
 # Hybrid Retrieval + Rerank
 
-<p align="center">
-  <img src="../.gitbook/assets/demo-placeholder.svg" alt="Retrieval walkthrough — demo video coming soon" width="720" />
-</p>
-<p align="center"><sub><strong>🎬 Walkthrough: Retrieval layers</strong> — placeholder (recording coming soon)</sub></p>
-
 ## Three retrieval layers, composable
 
 ```
@@ -43,11 +38,11 @@ That's the entire dense retriever. Six lines.
 
 Embeddings capture **semantic similarity** — great for paraphrases, weak for:
 
-| Weakness | Example |
-|---|---|
+| Weakness             | Example                                                                                         |
+| -------------------- | ----------------------------------------------------------------------------------------------- |
 | Exact string matches | "Section 302 of Sarbanes-Oxley" — dense sends this near other legal text, not the exact section |
-| Rare technical terms | "H100 GPU", "ETF ticker", specific fund names |
-| Negation | "Apple does *not* rely on X" vs. "Apple relies on X" — near-identical embeddings |
+| Rare technical terms | "H100 GPU", "ETF ticker", specific fund names                                                   |
+| Negation             | "Apple does _not_ rely on X" vs. "Apple relies on X" — near-identical embeddings                |
 
 This is why we add sparse.
 
@@ -66,7 +61,7 @@ top = np.argsort(-scores)[:top_k]
 
 BM25 indices are per-filter-key and cached in memory:
 
-* First BM25 query with a given filter set builds the index (~1s for 10k chunks).
+* First BM25 query with a given filter set builds the index (\~1s for 10k chunks).
 * Subsequent queries with the same filters reuse it.
 * Ingestion invalidates the cache (`invalidate_cache()` from `services/ingest.py`).
 
@@ -74,7 +69,7 @@ The cache is process-local. In a multi-worker deployment (gunicorn), each worker
 
 ## Fusion — Reciprocal Rank Fusion (RRF)
 
-The problem: `dense_score` is cosine in [0, 1]; `sparse_score` is a BM25 value in [0, ~20]. Adding them makes no sense.
+The problem: `dense_score` is cosine in \[0, 1]; `sparse_score` is a BM25 value in \[0, \~20]. Adding them makes no sense.
 
 **RRF sidesteps the normalization problem by using only ranks:**
 
@@ -97,7 +92,7 @@ Each ranker contributes `1/(k + rank)` per document that appears in its top list
 
 ### Typical impact
 
-On a well-ingested corpus, dense-only recall@10 lands around **0.60**. Adding BM25 + RRF pushes it to **~0.75–0.80** — a huge win for one small module.
+On a well-ingested corpus, dense-only recall@10 lands around **0.60**. Adding BM25 + RRF pushes it to **\~0.75–0.80** — a huge win for one small module.
 
 ## Rerank — cross-encoder
 
@@ -126,12 +121,12 @@ return ranked[:top_k]
 
 ### Cost & benefit
 
-* **Latency**: ~5ms per (query, chunk) pair on CPU. 40 candidates ≈ 200ms extra.
+* **Latency**: \~5ms per (query, chunk) pair on CPU. 40 candidates ≈ 200ms extra.
 * **Benefit**: typically **+0.05 to +0.10 faithfulness** on the answer eval. Big return for 200ms.
 
 ### About the scores
 
-Cross-encoder outputs are **unbounded logits**, typically in **[-10, +10]**. Even relevant chunks can score negative. This matters for the refusal threshold — see [Grounded Generation](grounded-generation.md#score-aware-refusal-threshold) for how the QA pipeline handles score-scale differences correctly.
+Cross-encoder outputs are **unbounded logits**, typically in **\[-10, +10]**. Even relevant chunks can score negative. This matters for the refusal threshold — see [Grounded Generation](grounded-generation.md#score-aware-refusal-threshold) for how the QA pipeline handles score-scale differences correctly.
 
 ## The orchestrator
 
@@ -174,11 +169,11 @@ This is one of the pragmatic wins of not using a dedicated vector DB — filteri
 
 ## The scoring model, in one table
 
-| Layer | Populates field | Range | Refusal threshold |
-|---|---|---|---|
-| Dense (cosine) | `dense_score` | [0, 1] | `dense_score >= 0.15` |
-| BM25 → RRF | `fused_score` | ~[0, 0.05] | Presence in fused output |
-| Cross-encoder rerank | `rerank_score` | ~[-10, +10] | `rerank_score >= -5.0` |
+| Layer                | Populates field | Range         | Refusal threshold        |
+| -------------------- | --------------- | ------------- | ------------------------ |
+| Dense (cosine)       | `dense_score`   | \[0, 1]       | `dense_score >= 0.15`    |
+| BM25 → RRF           | `fused_score`   | \~\[0, 0.05]  | Presence in fused output |
+| Cross-encoder rerank | `rerank_score`  | \~\[-10, +10] | `rerank_score >= -5.0`   |
 
 `RetrievedChunk.final_score` picks the highest layer that ran: `rerank_score` > `fused_score` > `dense_score`.
 
