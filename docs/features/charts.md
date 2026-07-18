@@ -2,6 +2,8 @@
 
 
 
+<figure><img src="../.gitbook/assets/chart-analysis (2)_compressed.gif" alt=""><figcaption></figcaption></figure>
+
 ## What it is
 
 Interactive, TradingView-style candlestick charts with drawing tools, technical indicators, and pattern detection — all driven by real market data.
