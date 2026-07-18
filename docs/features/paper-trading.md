@@ -1,7 +1,5 @@
 # Paper Trading
 
-<p align="center"><sub><strong>🎬 Demo: Paper Trading</strong> — placeholder (recording coming soon)</sub></p>
-
 ## What it is
 
 Paper Trading lets you run a virtual portfolio against **real market data**. Everything a real broker would let you do — buy, sell, watch, set alerts — but with zero financial risk.

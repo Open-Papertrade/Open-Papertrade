@@ -1,7 +1,5 @@
 # Backtesting
 
-<p align="center"><sub><strong>🎬 Demo: Backtesting</strong> — placeholder (recording coming soon)</sub></p>
-
 ## What it is
 
 A strategy backtesting engine — build a trading rule, run it against historical market data, and see how it would have performed. Full performance metrics, equity curve, and trade-by-trade log.

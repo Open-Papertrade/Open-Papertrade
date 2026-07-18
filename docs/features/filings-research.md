@@ -1,6 +1,6 @@
 # Filings Research Analyst
 
-<p align="center"><sub><strong>🎬 Demo: Filings Research Analyst</strong> — placeholder (recording coming soon)</sub></p>
+<figure><img src="../.gitbook/assets/Adobe Express - filings-research.gif" alt=""><figcaption></figcaption></figure>
 
 ## What it is
 

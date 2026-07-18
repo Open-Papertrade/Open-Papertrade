@@ -1,7 +1,5 @@
 # Mistral
 
-<p align="center"><sub><strong>🎬 Demo: Mistral setup</strong> — placeholder (recording coming soon)</sub></p>
-
 ## Why Mistral
 
 Direct Mistral API — EU-hosted, cheaper than GPT-4 class for many tasks, has a genuine free tier. Good middle-ground between closed-source hosted and fully-local options.

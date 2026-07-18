@@ -1,7 +1,5 @@
 # Ollama (local)
 
-<p align="center"><sub><strong>🎬 Demo: Ollama setup</strong> — placeholder (recording coming soon)</sub></p>
-
 ## Why Ollama
 
 Runs LLMs **fully locally** on your machine. Zero cost, complete privacy, no API key. Perfect for development, offline use, or when data can't leave your machine.

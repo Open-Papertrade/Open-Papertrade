@@ -1,7 +1,5 @@
 # Architecture
 
-<p align="center"><sub><strong>🎬 Walkthrough: Filings Architecture</strong> — placeholder (recording coming soon)</sub></p>
-
 ## The whole system in one diagram
 
 ```

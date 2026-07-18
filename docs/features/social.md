@@ -1,7 +1,5 @@
 # Leaderboard & Friends
 
-<p align="center"><sub><strong>🎬 Demo: Leaderboard &#x26; Friends</strong> — placeholder (recording coming soon)</sub></p>
-
 ## What it is
 
 The social layer of the app — a global leaderboard, a friends graph, and a lightweight gamification system (XP, ranks, achievements) that rewards consistent trading behavior.

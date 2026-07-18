@@ -1,7 +1,5 @@
 # OpenAI
 
-<p align="center"><sub><strong>🎬 Demo: OpenAI setup</strong> — placeholder (recording coming soon)</sub></p>
-
 ## Why OpenAI
 
 Standard hosted models. Widely documented, well-behaved on structured outputs (JSON mode), and the reference implementation for the `/v1/chat/completions` protocol every other OpenAI-compatible provider mimics.

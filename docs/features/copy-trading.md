@@ -1,7 +1,5 @@
 # Copy Trading
 
-<p align="center"><sub><strong>🎬 Demo: Copy Trading</strong> — placeholder (recording coming soon)</sub></p>
-
 ## What it is
 
 Follow other traders on the platform and automatically mirror their trades in your virtual account. The social-learning layer of the app — you learn from what more experienced traders actually do, not what they say.

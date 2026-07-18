@@ -1,7 +1,5 @@
 # Contributing Guide
 
-<p align="center"><sub><strong>🎬 Walkthrough: How to contribute</strong> — placeholder (recording coming soon)</sub></p>
-
 We welcome contributors at all experience levels. This page is a lightweight overview; the authoritative source is [`CONTRIBUTING.md`](https://github.com/) in the repo root.
 
 ## Where to start

@@ -1,7 +1,5 @@
 # Anthropic
 
-<p align="center"><sub><strong>🎬 Demo: Anthropic setup</strong> — placeholder (recording coming soon)</sub></p>
-
 ## Why Anthropic
 
 Best-in-class instruction-following and refusal behavior in this project's evals. If you want the highest-quality Filings Research answers _and_ the most honest refusals, Anthropic is the reference point.

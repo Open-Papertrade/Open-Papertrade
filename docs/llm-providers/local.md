@@ -1,7 +1,5 @@
 # Local OpenAI-compatible
 
-<p align="center"><sub><strong>🎬 Demo: Local server setup</strong> — placeholder (recording coming soon)</sub></p>
-
 ## What this is
 
 A **catch-all adapter for any local server that speaks OpenAI's `POST /v1/chat/completions` protocol** — LM Studio, vLLM, llama.cpp-server, Text Generation WebUI, and others. Use this when Ollama isn't the right fit (you want a specific model runner, want GPU-optimized serving, or already have one of these set up).

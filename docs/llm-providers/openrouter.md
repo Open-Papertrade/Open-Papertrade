@@ -1,7 +1,5 @@
 # OpenRouter (recommended)
 
-<p align="center"><sub><strong>🎬 Demo: OpenRouter setup</strong> — placeholder (recording coming soon)</sub></p>
-
 ## Why OpenRouter
 
 **One API key gives you access to every major model** — Claude, GPT, Mistral, Llama, Gemini, DeepSeek, Qwen, and dozens more. Pay-as-you-go at each provider's published rate, or use free-tier slugs where available.

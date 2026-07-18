@@ -1,7 +1,5 @@
 # Overview
 
-<p align="center"><sub><strong>🎬 Walkthrough: Switching providers</strong> — placeholder (recording coming soon)</sub></p>
-
 ## Six providers, one interface
 
 Every AI feature — AI Coach, chart analysis, Filings Research — talks to LLMs through a single interface (`backend/filings/services/llm/`). Six adapters ship out of the box:
