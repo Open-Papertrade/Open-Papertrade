@@ -15,7 +15,7 @@ Some good first contributions, roughly by effort:
 ```bash
 git clone https://github.com/<your-fork>/Open-Papertrade.git
 cd Open-Papertrade
-git remote add upstream https://github.com/<original-org>/Open-Papertrade.git
+git remote add upstream https://github.com/Open-Papertrade/Open-Papertrade.git
 ```
 
 ### 2. Set up as usual
