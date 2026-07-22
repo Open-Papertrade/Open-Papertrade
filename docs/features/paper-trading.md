@@ -1,5 +1,7 @@
 # Paper Trading
 
+<figure><img src="../.gitbook/assets/Adobe Express - paper-trading.gif" alt=""><figcaption></figcaption></figure>
+
 ## What it is
 
 Paper Trading lets you run a virtual portfolio against **real market data**. Everything a real broker would let you do — buy, sell, watch, set alerts — but with zero financial risk.
