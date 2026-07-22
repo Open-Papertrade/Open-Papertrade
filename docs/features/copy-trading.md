@@ -1,5 +1,7 @@
 # Copy Trading
 
+<figure><img src="../.gitbook/assets/Adobe Express - copy-trade.gif" alt=""><figcaption></figcaption></figure>
+
 ## What it is
 
 Follow other traders on the platform and automatically mirror their trades in your virtual account. The social-learning layer of the app — you learn from what more experienced traders actually do, not what they say.

@@ -1,5 +1,7 @@
 # Leaderboard & Friends
 
+<figure><img src="../.gitbook/assets/Adobe Express - leaderboard.gif" alt=""><figcaption></figcaption></figure>
+
 ## What it is
 
 The social layer of the app — a global leaderboard, a friends graph, and a lightweight gamification system (XP, ranks, achievements) that rewards consistent trading behavior.

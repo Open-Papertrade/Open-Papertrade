@@ -1,5 +1,7 @@
 # Backtesting
 
+<figure><img src="../.gitbook/assets/Adobe Express - backtesting.gif" alt=""><figcaption></figcaption></figure>
+
 ## What it is
 
 A strategy backtesting engine — build a trading rule, run it against historical market data, and see how it would have performed. Full performance metrics, equity curve, and trade-by-trade log.
