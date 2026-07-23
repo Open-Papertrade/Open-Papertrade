@@ -66,6 +66,12 @@ secrets.json
 # Assets / docs folders
 icons/
 readme/
+assets/
+
+# Private / not-for-commit
+SEO_STRATEGY.md
+posts/
+landing-page/
 
 # Misc
 .DS_Store
