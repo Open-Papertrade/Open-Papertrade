@@ -3,6 +3,7 @@ import { PortfolioProvider } from "@/context/PortfolioContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { AchievementToastProvider } from "@/components/AchievementToast";
 import { XpToastProvider } from "@/components/XpToast";
+import { ToastProvider } from "@/components/Toast";
 import { APP_CONFIG } from "@/config/app";
 import "./globals.css";
 
@@ -28,11 +29,13 @@ export default function RootLayout({
       </head>
       <body className="h-full font-primary antialiased">
         <AuthProvider>
-          <AchievementToastProvider>
-            <XpToastProvider>
-              <PortfolioProvider>{children}</PortfolioProvider>
-            </XpToastProvider>
-          </AchievementToastProvider>
+          <ToastProvider>
+            <AchievementToastProvider>
+              <XpToastProvider>
+                <PortfolioProvider>{children}</PortfolioProvider>
+              </XpToastProvider>
+            </AchievementToastProvider>
+          </ToastProvider>
         </AuthProvider>
       </body>
     </html>

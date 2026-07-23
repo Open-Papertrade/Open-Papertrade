@@ -16,6 +16,20 @@ import { getBacktest, type SavedBacktest } from "@/lib/services/backtesting/stor
 
 type ResultTab = "overview" | "trades" | "monthly";
 
+// Defensive helpers — the results object may contain nulls / NaN for edge cases.
+function num(v: unknown, fallback = 0): number {
+  if (typeof v === "number" && Number.isFinite(v)) return v;
+  return fallback;
+}
+function fmt(v: unknown, digits = 2): string {
+  const n = typeof v === "number" && Number.isFinite(v) ? v : null;
+  return n === null ? "—" : n.toFixed(digits);
+}
+function fmtInt(v: unknown): string {
+  const n = typeof v === "number" && Number.isFinite(v) ? v : null;
+  return n === null ? "—" : Math.round(n).toLocaleString("en-US");
+}
+
 export default function BacktestResultsPage() {
   const router = useRouter();
   const params = useParams();
@@ -26,9 +40,15 @@ export default function BacktestResultsPage() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const bt = getBacktest(id);
-    setBacktest(bt);
-    setMounted(true);
+    let cancelled = false;
+    (async () => {
+      const bt = await getBacktest(id);
+      if (!cancelled) {
+        setBacktest(bt);
+        setMounted(true);
+      }
+    })();
+    return () => { cancelled = true; };
   }, [id]);
 
   if (!mounted) {
@@ -61,7 +81,16 @@ export default function BacktestResultsPage() {
 
   const { results, config_snapshot: config } = backtest;
   const stats = results.statistics;
-  const isPositive = stats.totalReturn >= 0;
+  const totalReturn = num(stats.totalReturn);
+  const totalReturnPct = num(stats.totalReturnPercent);
+  const buyHoldPct = num(stats.buyAndHoldReturnPercent);
+  const winRate = num(stats.winRate);
+  const sharpe = num(stats.sharpeRatio);
+  const maxDdPct = num(stats.maxDrawdownPercent);
+  const maxDd = num(stats.maxDrawdown);
+  const profitFactor = stats.profitFactor;   // may be Infinity, handled below
+  const isPositive = totalReturn >= 0;
+  const alphaPct = totalReturnPct - buyHoldPct;
 
   return (
     <div className="flex h-full bg-[var(--bg-primary)]">
@@ -85,7 +114,7 @@ export default function BacktestResultsPage() {
                   {backtest.symbol}
                 </span>{" "}
                 {backtest.start_date} → {backtest.end_date}
-                {" · "}${backtest.initial_capital.toLocaleString()} initial
+                {" · "}${fmtInt(backtest.initial_capital)} initial
               </p>
             </div>
           </div>
@@ -95,40 +124,44 @@ export default function BacktestResultsPage() {
         <div className="grid grid-cols-6 gap-4">
           <MetricCard
             label="Total Return"
-            value={`${isPositive ? "+" : ""}$${Math.abs(stats.totalReturn).toLocaleString("en-US", { maximumFractionDigits: 0 })}`}
-            sub={`${isPositive ? "+" : ""}${stats.totalReturnPercent.toFixed(2)}%`}
+            value={`${isPositive ? "+" : ""}$${fmtInt(Math.abs(totalReturn))}`}
+            sub={`${isPositive ? "+" : ""}${fmt(totalReturnPct, 2)}%`}
             positive={isPositive}
           />
           <MetricCard
             label="Win Rate"
-            value={`${stats.winRate.toFixed(1)}%`}
-            sub={`${stats.winningTrades}W / ${stats.losingTrades}L`}
-            positive={stats.winRate > 50}
+            value={`${fmt(winRate, 1)}%`}
+            sub={`${fmtInt(stats.winningTrades)}W / ${fmtInt(stats.losingTrades)}L`}
+            positive={winRate > 50}
           />
           <MetricCard
             label="Sharpe Ratio"
-            value={stats.sharpeRatio.toFixed(2)}
-            sub={stats.sharpeRatio > 1 ? "Good" : stats.sharpeRatio > 0.5 ? "Fair" : "Poor"}
-            positive={stats.sharpeRatio > 1}
+            value={fmt(sharpe, 2)}
+            sub={sharpe > 1 ? "Good" : sharpe > 0.5 ? "Fair" : "Poor"}
+            positive={sharpe > 1}
           />
           <MetricCard
             label="Max Drawdown"
-            value={`-${stats.maxDrawdownPercent.toFixed(1)}%`}
-            sub={`-$${Math.abs(stats.maxDrawdown).toLocaleString("en-US", { maximumFractionDigits: 0 })}`}
+            value={`-${fmt(maxDdPct, 1)}%`}
+            sub={`-$${fmtInt(Math.abs(maxDd))}`}
             positive={false}
             alwaysRed
           />
           <MetricCard
             label="Profit Factor"
-            value={stats.profitFactor === Infinity ? "∞" : stats.profitFactor.toFixed(2)}
-            sub={`${stats.totalTrades} trades`}
-            positive={stats.profitFactor > 1}
+            value={
+              profitFactor === Infinity
+                ? "∞"
+                : fmt(profitFactor, 2)
+            }
+            sub={`${fmtInt(stats.totalTrades)} trades`}
+            positive={typeof profitFactor === "number" && profitFactor > 1}
           />
           <MetricCard
             label="vs Buy & Hold"
-            value={`${(stats.totalReturnPercent - stats.buyAndHoldReturnPercent) >= 0 ? "+" : ""}${(stats.totalReturnPercent - stats.buyAndHoldReturnPercent).toFixed(1)}%`}
-            sub={`B&H: ${stats.buyAndHoldReturnPercent >= 0 ? "+" : ""}${stats.buyAndHoldReturnPercent.toFixed(1)}%`}
-            positive={stats.totalReturnPercent >= stats.buyAndHoldReturnPercent}
+            value={`${alphaPct >= 0 ? "+" : ""}${fmt(alphaPct, 1)}%`}
+            sub={`B&H: ${buyHoldPct >= 0 ? "+" : ""}${fmt(buyHoldPct, 1)}%`}
+            positive={totalReturnPct >= buyHoldPct}
           />
         </div>
 

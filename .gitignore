@@ -62,10 +62,16 @@ secrets.json
 !docs/**/*.md
 !docs/*.md
 
+# Private / not-for-commit
+SEO_STRATEGY.md
+posts/
+landing-page/
+
 # PDFs
 *.pdf
 
 # Assets / docs folders
+assets/
 icons/
 readme/
 

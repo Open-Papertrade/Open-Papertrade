@@ -10,7 +10,8 @@ from unfold.admin import ModelAdmin
 from unfold.decorators import display, action
 from .models import (
     UserProfile, UserSettings, Achievement, UserAchievement,
-    Trade, Holding, Watchlist, PriceAlert, SiteSettings, APIKey, LimitOrder
+    Trade, Holding, Watchlist, PriceAlert, SiteSettings, APIKey, LimitOrder,
+    Strategy, Backtest,
 )
 from .email_service import send_test_email
 from .report_views import compute_weekly_report, compute_monthly_report, compute_yearly_report
@@ -354,3 +355,22 @@ class LimitOrderAdmin(ModelAdmin):
     @display(description="Limit Price")
     def display_limit_price(self, obj):
         return _fmt(obj.limit_price, obj.currency)
+
+
+# ── Backtesting ──────────────────────────────────────────────────
+
+@admin.register(Strategy)
+class StrategyAdmin(ModelAdmin):
+    list_display = ("name", "owner", "is_public", "updated_at")
+    list_filter = ("is_public",)
+    search_fields = ("name", "description", "owner__username", "owner__email")
+    readonly_fields = ("created_at", "updated_at")
+
+
+@admin.register(Backtest)
+class BacktestAdmin(ModelAdmin):
+    list_display = ("strategy_name", "symbol", "owner", "start_date", "end_date", "created_at")
+    list_filter = ("symbol",)
+    search_fields = ("strategy_name", "symbol", "owner__username", "owner__email")
+    readonly_fields = ("created_at", "results", "config_snapshot")
+    date_hierarchy = "created_at"

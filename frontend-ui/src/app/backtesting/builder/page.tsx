@@ -19,9 +19,8 @@ import StrategySummary from "@/components/backtesting/StrategySummary";
 import {
   getStrategy,
   saveStrategy,
-  saveBacktest,
+  runAndSaveBacktest,
 } from "@/lib/services/backtesting/storage";
-import { API_HOST } from "@/lib/api";
 import type {
   StrategyConfig,
   IndicatorConfig,
@@ -71,26 +70,33 @@ function StrategyBuilderPage() {
   // Load strategy if editing
   useEffect(() => {
     if (!editId) return;
-    const strategy = getStrategy(editId);
-    if (strategy) {
+    let cancelled = false;
+    (async () => {
+      const strategy = await getStrategy(editId);
+      if (cancelled || !strategy) return;
       setName(strategy.name);
       setDescription(strategy.description);
       setConfig(strategy.config);
       setStrategyId(strategy.id);
-    }
+    })();
+    return () => { cancelled = true; };
   }, [editId]);
 
-  const handleSave = useCallback(() => {
+  const handleSave = useCallback(async () => {
     setSaving(true);
-    const result = saveStrategy({
-      id: strategyId || undefined,
-      name,
-      description,
-      config,
-    });
-    setStrategyId(result.id);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    try {
+      const result = await saveStrategy({
+        id: strategyId || undefined,
+        name,
+        description,
+        config,
+      });
+      setStrategyId(result.id);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (e: any) {
+      setError(e.message || "Failed to save strategy");
+    }
     setSaving(false);
   }, [name, description, config, strategyId]);
 
@@ -111,51 +117,30 @@ function StrategyBuilderPage() {
     setError(null);
     setRunning(true);
 
-    // Save strategy first
-    const savedStrat = saveStrategy({
-      id: strategyId || undefined,
-      name,
-      description,
-      config,
-    });
-    setStrategyId(savedStrat.id);
-
     try {
-      const res = await fetch(`${API_HOST}/api/users/backtesting/run/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          config,
-          symbol,
-          start_date: startDate,
-          end_date: endDate,
-          initial_capital: initialCapital,
-        }),
+      // Save strategy first so we can pass its id to the run endpoint
+      const savedStrat = await saveStrategy({
+        id: strategyId || undefined,
+        name,
+        description,
+        config,
       });
+      setStrategyId(savedStrat.id);
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Backtest failed");
-        setRunning(false);
-        return;
-      }
-
-      // Save backtest result to localStorage
-      const bt = saveBacktest({
+      // Single call: server runs, persists, returns the saved id + results.
+      const bt = await runAndSaveBacktest({
+        strategy_id: savedStrat.id,
         strategy_name: name,
         symbol: symbol.toUpperCase(),
         start_date: startDate,
         end_date: endDate,
         initial_capital: initialCapital,
-        config_snapshot: config,
-        results: data.results,
+        config,
       });
 
       router.push(`/backtesting/results/${bt.id}`);
     } catch (e: any) {
-      setError(e.message || "Network error");
+      setError(e.message || "Backtest failed");
     }
     setRunning(false);
   };

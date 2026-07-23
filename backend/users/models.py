@@ -5,6 +5,7 @@ User models for paper trading app.
 import re
 import random
 import string
+from decimal import Decimal
 
 from django.db import models
 from django.contrib.auth.hashers import make_password, check_password as django_check_password
@@ -668,4 +669,74 @@ class CopyTrade(models.Model):
             "sourcePrice": float(self.source_price),
             "copyShares": float(self.copy_shares),
             "copyPrice": float(self.copy_price) if self.copy_price else None,
+        }
+
+
+# ── Backtesting: Strategies & Results ────────────────────────────
+
+class Strategy(models.Model):
+    """A saved trading strategy — indicators + entry/exit rules + sizing."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    owner = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='strategies')
+    name = models.CharField(max_length=200)
+    description = models.TextField(blank=True, default='')
+    config = models.JSONField(default=dict, help_text='indicators, entryConditions, exitConditions, positionSizing, etc.')
+    is_public = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'backtest_strategies'
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f'{self.name} ({self.owner.username})'
+
+    def to_dict(self):
+        return {
+            'id': str(self.id),
+            'name': self.name,
+            'description': self.description,
+            'config': self.config,
+            'is_public': self.is_public,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat(),
+        }
+
+
+class Backtest(models.Model):
+    """A stored backtest run — strategy config snapshot + full results."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    owner = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='backtests')
+    strategy = models.ForeignKey(
+        Strategy, on_delete=models.SET_NULL, null=True, blank=True, related_name='backtests'
+    )
+    strategy_name = models.CharField(max_length=200, help_text='snapshot of strategy name at run time')
+    symbol = models.CharField(max_length=32)
+    start_date = models.CharField(max_length=10)
+    end_date = models.CharField(max_length=10)
+    initial_capital = models.DecimalField(max_digits=20, decimal_places=2, default=Decimal('100000.00'))
+    config_snapshot = models.JSONField(default=dict, help_text='the strategy config as it was when this backtest ran')
+    results = models.JSONField(default=dict, help_text='equityCurve, trades, statistics, monthlyReturns, etc.')
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = 'backtests'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'Backtest {self.strategy_name} @ {self.symbol} ({self.created_at:%Y-%m-%d})'
+
+    def to_dict(self):
+        return {
+            'id': str(self.id),
+            'strategy_id': str(self.strategy_id) if self.strategy_id else None,
+            'strategy_name': self.strategy_name,
+            'symbol': self.symbol,
+            'start_date': self.start_date,
+            'end_date': self.end_date,
+            'initial_capital': float(self.initial_capital),
+            'config_snapshot': self.config_snapshot,
+            'results': self.results,
+            'created_at': self.created_at.isoformat(),
         }

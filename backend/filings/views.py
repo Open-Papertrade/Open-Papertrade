@@ -62,6 +62,11 @@ def delete_filing(request, filing_id: int):
 
     company_id = filing.company_id
     company_ticker = filing.company.ticker
+
+    # Remove the ingestion-job trail — otherwise the "Add a filing by URL" list
+    # keeps showing a ✓ for a filing that no longer exists.
+    IngestJob.objects.filter(filing_id=filing_id).delete()
+
     filing.delete()  # cascades to Section + Chunk
 
     remaining = Filing.objects.filter(company_id=company_id).count()
@@ -270,5 +275,12 @@ def ingest_status(request, job_id: int):
 @permission_classes([AllowAny])
 def ingest_jobs(request):
     limit = min(int(request.GET.get('limit', 20)), 100)
-    qs = IngestJob.objects.select_related('filing__company').all()[:limit]
+    # Hide orphaned success jobs (Filing was deleted → filing_id went NULL under
+    # SET_NULL). They're historical artifacts that still show a ✓ in the UI.
+    qs = (
+        IngestJob.objects
+        .select_related('filing__company')
+        .exclude(status='success', filing__isnull=True)
+        [:limit]
+    )
     return Response([_serialize_job(j) for j in qs])

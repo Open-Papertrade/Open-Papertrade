@@ -9,6 +9,7 @@ import { setCurrentCurrency, CURRENCY_SYMBOLS, EXCHANGE_RATES, convertCurrency }
 import { useAuth } from "@/context/AuthContext";
 import { useAchievementToast } from "@/components/AchievementToast";
 import { useXpToast } from "@/components/XpToast";
+import { useToast } from "@/components/Toast";
 
 
 interface TradingSettings {
@@ -107,6 +108,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { showAchievements } = useAchievementToast();
   const { showXpGain } = useXpToast();
+  const toast = useToast();
 
   const [user, setUser] = useState<User>({
     ...APP_CONFIG.defaultUser,
@@ -746,11 +748,19 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
       setCurrencySymbol(symbol);
       setExchangeRate(rate);
       setCurrentCurrency({ code: result.currency, symbol, rate });
+      toast.success(
+        "Currency updated",
+        `Now displaying values in ${result.currency} (${symbol.trim() || result.currency}).`,
+      );
     } catch (err) {
       console.error("Failed to update currency:", err);
+      toast.error(
+        "Couldn't update currency",
+        err instanceof Error ? err.message : "Please try again.",
+      );
       throw err;
     }
-  }, []);
+  }, [toast]);
 
   const setMarket = useCallback(async (newMarket: string) => {
     try {
@@ -758,11 +768,19 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
       setMarketState(result.market);
       // Refresh prices with new market directly (don't rely on stale closure)
       await refreshPrices(result.market);
+      toast.success(
+        "Market updated",
+        `Watching the ${result.market === "IN" ? "Indian" : result.market === "US" ? "US" : result.market} market. Prices refreshed.`,
+      );
     } catch (err) {
       console.error("Failed to update market:", err);
+      toast.error(
+        "Couldn't switch market",
+        err instanceof Error ? err.message : "Please try again.",
+      );
       throw err;
     }
-  }, [refreshPrices]);
+  }, [refreshPrices, toast]);
 
   const updateTradingSettings = useCallback((updates: Partial<TradingSettings>) => {
     setSettings(prev => ({ ...prev, ...updates }));

@@ -1,8 +1,14 @@
 /**
- * Client-side storage for strategies and backtest results using localStorage.
+ * Backend-backed persistence for strategies and backtests.
+ *
+ * All calls hit /api/users/backtesting/... — nothing lives in localStorage anymore.
+ * The public function signatures are async now; existing callers must `await`.
  */
 
-import type { StrategyConfig, BacktestResults, BacktestStatistics } from '@/types/backtesting';
+import type { StrategyConfig, BacktestResults } from '@/types/backtesting';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+const API_ROOT = `${API_BASE_URL}/users/backtesting`;
 
 export interface SavedStrategy {
   id: string;
@@ -16,6 +22,7 @@ export interface SavedStrategy {
 
 export interface SavedBacktest {
   id: string;
+  strategy_id: string | null;
   strategy_name: string;
   symbol: string;
   start_date: string;
@@ -26,87 +33,131 @@ export interface SavedBacktest {
   created_at: string;
 }
 
-const STRATEGIES_KEY = 'openpt_strategies';
-const BACKTESTS_KEY = 'openpt_backtests';
+/** Compact record returned by the list endpoint (no full results/config). */
+export interface BacktestListEntry {
+  id: string;
+  strategy_id: string | null;
+  strategy_name: string;
+  symbol: string;
+  start_date: string;
+  end_date: string;
+  initial_capital: number;
+  created_at: string;
+  summary_stats: {
+    totalReturnPercent: number | null;
+    winRate: number | null;
+    sharpeRatio: number | null;
+    maxDrawdownPercent: number | null;
+    totalTrades: number | null;
+  };
+}
 
-function uuid(): string {
-  return crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const res = await fetch(`${API_ROOT}${path}`, {
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    ...init,
+  });
+  if (!res.ok) {
+    let msg = `Request failed (${res.status})`;
+    try {
+      const body = await res.json();
+      if (body?.error) msg = body.error;
+    } catch { /* ignore */ }
+    throw new Error(msg);
+  }
+  return res.json() as Promise<T>;
 }
 
 // ── Strategies ──────────────────────────────────────────────────
 
-export function getStrategies(): SavedStrategy[] {
+export async function getStrategies(): Promise<SavedStrategy[]> {
+  return api<SavedStrategy[]>('/strategies/');
+}
+
+export async function getStrategy(id: string): Promise<SavedStrategy | null> {
   try {
-    return JSON.parse(localStorage.getItem(STRATEGIES_KEY) || '[]');
+    return await api<SavedStrategy>(`/strategies/${id}/`);
   } catch {
-    return [];
+    return null;
   }
 }
 
-export function getStrategy(id: string): SavedStrategy | null {
-  return getStrategies().find((s) => s.id === id) || null;
-}
-
-export function saveStrategy(data: {
+export async function saveStrategy(data: {
   id?: string;
   name: string;
   description: string;
   config: StrategyConfig;
-}): SavedStrategy {
-  const strategies = getStrategies();
-  const now = new Date().toISOString();
-
-  if (data.id) {
-    // Update existing
-    const idx = strategies.findIndex((s) => s.id === data.id);
-    if (idx >= 0) {
-      strategies[idx] = {
-        ...strategies[idx],
-        name: data.name,
-        description: data.description,
-        config: data.config,
-        updated_at: now,
-      };
-      localStorage.setItem(STRATEGIES_KEY, JSON.stringify(strategies));
-      return strategies[idx];
-    }
-  }
-
-  // Create new
-  const strategy: SavedStrategy = {
-    id: data.id || uuid(),
-    name: data.name,
-    description: data.description,
-    config: data.config,
-    is_public: false,
-    created_at: now,
-    updated_at: now,
-  };
-  strategies.unshift(strategy);
-  localStorage.setItem(STRATEGIES_KEY, JSON.stringify(strategies));
-  return strategy;
+}): Promise<SavedStrategy> {
+  return api<SavedStrategy>('/strategies/', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
 }
 
-export function deleteStrategy(id: string): void {
-  const strategies = getStrategies().filter((s) => s.id !== id);
-  localStorage.setItem(STRATEGIES_KEY, JSON.stringify(strategies));
+export async function deleteStrategy(id: string): Promise<void> {
+  await api(`/strategies/${id}/`, { method: 'DELETE' });
 }
 
 // ── Backtests ───────────────────────────────────────────────────
 
-export function getBacktests(): SavedBacktest[] {
+export async function getBacktests(): Promise<BacktestListEntry[]> {
+  return api<BacktestListEntry[]>('/backtests/');
+}
+
+export async function getBacktest(id: string): Promise<SavedBacktest | null> {
   try {
-    return JSON.parse(localStorage.getItem(BACKTESTS_KEY) || '[]');
+    return await api<SavedBacktest>(`/backtests/${id}/`);
   } catch {
-    return [];
+    return null;
   }
 }
 
-export function getBacktest(id: string): SavedBacktest | null {
-  return getBacktests().find((b) => b.id === id) || null;
+/**
+ * Run + save in one call. Returns the saved backtest (with full results).
+ * Use this from the builder page instead of calling /run/ and saveBacktest separately.
+ */
+export async function runAndSaveBacktest(input: {
+  strategy_id?: string | null;
+  strategy_name: string;
+  symbol: string;
+  start_date: string;
+  end_date: string;
+  initial_capital: number;
+  config: StrategyConfig;
+}): Promise<SavedBacktest> {
+  const res = await fetch(`${API_ROOT}/run/`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      config: input.config,
+      symbol: input.symbol,
+      start_date: input.start_date,
+      end_date: input.end_date,
+      initial_capital: input.initial_capital,
+      strategy_id: input.strategy_id ?? undefined,
+      strategy_name: input.strategy_name,
+      save: true,
+    }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || 'Backtest failed');
+  }
+  const { id } = await res.json();
+  if (!id) throw new Error('Backtest ran but was not saved');
+  const full = await getBacktest(id);
+  if (!full) throw new Error('Saved backtest could not be reloaded');
+  return full;
 }
 
-export function saveBacktest(data: {
+/**
+ * Legacy shim — used by the compare flow that already has computed results.
+ * Persists them by re-running via /run/ with save=true.
+ */
+export async function saveBacktest(data: {
+  strategy_id?: string | null;
   strategy_name: string;
   symbol: string;
   start_date: string;
@@ -114,21 +165,18 @@ export function saveBacktest(data: {
   initial_capital: number;
   config_snapshot: StrategyConfig;
   results: BacktestResults;
-}): SavedBacktest {
-  const backtests = getBacktests();
-  const backtest: SavedBacktest = {
-    id: uuid(),
-    ...data,
-    created_at: new Date().toISOString(),
-  };
-  backtests.unshift(backtest);
-  // Keep only last 50 backtests to prevent localStorage overflow
-  if (backtests.length > 50) backtests.length = 50;
-  localStorage.setItem(BACKTESTS_KEY, JSON.stringify(backtests));
-  return backtest;
+}): Promise<SavedBacktest> {
+  return runAndSaveBacktest({
+    strategy_id: data.strategy_id ?? null,
+    strategy_name: data.strategy_name,
+    symbol: data.symbol,
+    start_date: data.start_date,
+    end_date: data.end_date,
+    initial_capital: data.initial_capital,
+    config: data.config_snapshot,
+  });
 }
 
-export function deleteBacktest(id: string): void {
-  const backtests = getBacktests().filter((b) => b.id !== id);
-  localStorage.setItem(BACKTESTS_KEY, JSON.stringify(backtests));
+export async function deleteBacktest(id: string): Promise<void> {
+  await api(`/backtests/${id}/`, { method: 'DELETE' });
 }

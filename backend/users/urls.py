@@ -94,9 +94,17 @@ urlpatterns = [
     path('api-keys/', security_views.APIKeyListCreateView.as_view(), name='api-keys'),
     path('api-keys/<uuid:key_id>/', security_views.APIKeyRevokeView.as_view(), name='api-key-revoke'),
 
-    # Backtesting
+    # Backtesting — runners
     path('backtesting/run/', backtesting_views.RunBacktestView.as_view(), name='backtest-run'),
     path('backtesting/compare/', backtesting_views.BacktestCompareView.as_view(), name='backtest-compare'),
+
+    # Backtesting — strategies CRUD
+    path('backtesting/strategies/', backtesting_views.StrategyListView.as_view(), name='backtest-strategies'),
+    path('backtesting/strategies/<uuid:strategy_id>/', backtesting_views.StrategyDetailView.as_view(), name='backtest-strategy-detail'),
+
+    # Backtesting — persisted results CRUD
+    path('backtesting/backtests/', backtesting_views.BacktestListView.as_view(), name='backtest-list'),
+    path('backtesting/backtests/<uuid:backtest_id>/', backtesting_views.BacktestDetailView.as_view(), name='backtest-detail'),
 
     # AI Trade Coach
     path('coaching/dashboard/', coaching_views.CoachDashboardView.as_view(), name='coach-dashboard'),
@@ -110,8 +118,10 @@ urlpatterns = [
     # Copy Trading / Social
     path('copy-trading/', copy_trading_views.CopyTradingDashboardView.as_view(), name='copy-trading-dashboard'),
     path('copy-trading/follow/<str:username>/', copy_trading_views.FollowTraderView.as_view(), name='follow-trader'),
-    path('copy-trading/copy/<str:username>/', copy_trading_views.StartCopyTradingView.as_view(), name='start-copy-trading'),
+    # NOTE: uuid must come first — <str:username> matches anything (including UUIDs)
+    # and would shadow the more-specific uuid pattern below.
     path('copy-trading/copy/<uuid:relationship_id>/', copy_trading_views.UpdateCopyRelationshipView.as_view(), name='update-copy-relationship'),
+    path('copy-trading/copy/<str:username>/', copy_trading_views.StartCopyTradingView.as_view(), name='start-copy-trading'),
     path('copy-trading/stop/<uuid:relationship_id>/', copy_trading_views.StopCopyTradingView.as_view(), name='stop-copy-trading'),
     path('copy-trading/mirror/<str:username>/', copy_trading_views.MirrorPortfolioView.as_view(), name='mirror-portfolio'),
     path('copy-trading/feed/', copy_trading_views.SocialFeedView.as_view(), name='social-feed'),
