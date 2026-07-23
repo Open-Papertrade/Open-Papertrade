@@ -26,10 +26,20 @@ import {
   UserCheck,
   Clock,
   X,
+  Copy,
+  Users,
+  Wallet,
+  Package,
+  Globe2,
+  Sparkles,
+  StopCircle,
 } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import { userAPI, API_HOST, type PublicProfile, type Achievement, type FriendshipStatus } from "@/lib/api";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, CURRENCY_SYMBOLS } from "@/lib/utils";
+import CopyTradesModal from "@/components/copy-trading/CopyTradesModal";
+import { usePortfolio } from "@/context/PortfolioContext";
+import { useToast } from "@/components/Toast";
 
 function getRankColor(rank: string): string {
   const colors: Record<string, string> = {
@@ -48,11 +58,16 @@ export default function PublicProfilePage() {
   const params = useParams();
   const username = params.username as string;
 
+  const { user: viewer } = usePortfolio();
+  const toast = useToast();
+
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [friendStatus, setFriendStatus] = useState<FriendshipStatus | null>(null);
   const [friendLoading, setFriendLoading] = useState(false);
+  const [copyOpen, setCopyOpen] = useState(false);
+  const [copyBusy, setCopyBusy] = useState(false);
 
   const fetchProfile = useCallback(async () => {
     setIsLoading(true);
@@ -116,6 +131,23 @@ export default function PublicProfilePage() {
       setFriendStatus({ status: 'none' });
     } catch { /* ignore */ }
     setFriendLoading(false);
+  };
+
+  const handleStopCopy = async () => {
+    if (!profile?.copyRelationshipId) return;
+    const confirmStop = confirm(
+      `Stop copying @${profile.username}?\n\nAllocated funds will be returned to your buying power.`
+    );
+    if (!confirmStop) return;
+    setCopyBusy(true);
+    try {
+      await userAPI.stopCopyTrading(profile.copyRelationshipId);
+      toast.success("Stopped copying", `@${profile.username} — allocated funds returned to your buying power.`);
+      fetchProfile();
+    } catch (e: any) {
+      toast.error("Couldn't stop copying", e?.message || "Please try again.");
+    }
+    setCopyBusy(false);
   };
 
   const formatMemberSince = (dateString: string) => {
@@ -254,27 +286,54 @@ export default function PublicProfilePage() {
               </div>
             </div>
 
-            {/* Friend Button */}
+            {/* Action buttons */}
             {friendStatus && friendStatus.status !== 'self' && (
-              <div className="ml-auto flex items-center gap-2">
+              <div className="ml-auto flex items-center gap-2 flex-wrap justify-end">
+                {/* Copy trades — primary CTA */}
+                {profile.isCopying ? (
+                  <button
+                    onClick={handleStopCopy}
+                    disabled={copyBusy}
+                    className="group flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[var(--accent-green)]/10 border border-[var(--accent-green)]/40 text-[var(--accent-green)] text-sm font-semibold hover:bg-[var(--accent-red)]/10 hover:border-[var(--accent-red)]/40 hover:text-[var(--accent-red)] transition-colors disabled:opacity-50"
+                  >
+                    {copyBusy ? <Loader2 size={14} className="animate-spin" /> : (
+                      <>
+                        <UserCheck size={14} className="group-hover:hidden" />
+                        <StopCircle size={14} className="hidden group-hover:block" />
+                      </>
+                    )}
+                    <span className="group-hover:hidden">Copying</span>
+                    <span className="hidden group-hover:inline">Stop copying</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setCopyOpen(true)}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] text-white text-sm font-semibold shadow-lg shadow-[var(--accent-primary)]/30 hover:shadow-xl transition-all"
+                  >
+                    <Copy size={14} />
+                    Copy trades
+                  </button>
+                )}
+
+                {/* Friend actions */}
                 {friendStatus.status === 'none' && (
                   <button
                     onClick={handleSendRequest}
                     disabled={friendLoading}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--accent-primary)] text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[var(--bg-card-inner)] border border-[var(--border-primary)] text-[var(--text-primary)] text-sm font-medium hover:border-[var(--accent-primary)]/40 transition-colors disabled:opacity-50"
                   >
-                    <UserPlus size={16} />
-                    Add Friend
+                    <UserPlus size={14} />
+                    Add friend
                   </button>
                 )}
                 {friendStatus.status === 'pending' && friendStatus.direction === 'outgoing' && (
                   <button
                     onClick={handleCancelOrRemove}
                     disabled={friendLoading}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-card-inner)] border border-[var(--border-primary)] text-[var(--text-muted)] text-sm font-medium hover:border-[var(--accent-red)] hover:text-[var(--accent-red)] transition-colors disabled:opacity-50"
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[var(--bg-card-inner)] border border-[var(--border-primary)] text-[var(--text-muted)] text-sm font-medium hover:border-[var(--accent-red)] hover:text-[var(--accent-red)] transition-colors disabled:opacity-50"
                   >
-                    <Clock size={16} />
-                    Request Sent
+                    <Clock size={14} />
+                    Request sent
                   </button>
                 )}
                 {friendStatus.status === 'pending' && friendStatus.direction === 'incoming' && (
@@ -282,17 +341,17 @@ export default function PublicProfilePage() {
                     <button
                       onClick={handleAcceptRequest}
                       disabled={friendLoading}
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--accent-green)] text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[var(--accent-green)] text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
                     >
-                      <UserCheck size={16} />
-                      Accept Request
+                      <UserCheck size={14} />
+                      Accept
                     </button>
                     <button
                       onClick={handleRejectRequest}
                       disabled={friendLoading}
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--bg-card-inner)] border border-[var(--border-primary)] text-[var(--text-muted)] text-sm hover:border-[var(--accent-red)] hover:text-[var(--accent-red)] transition-colors disabled:opacity-50"
+                      className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-[var(--bg-card-inner)] border border-[var(--border-primary)] text-[var(--text-muted)] text-sm hover:border-[var(--accent-red)] hover:text-[var(--accent-red)] transition-colors disabled:opacity-50"
                     >
-                      <X size={16} />
+                      <X size={14} />
                     </button>
                   </>
                 )}
@@ -300,15 +359,51 @@ export default function PublicProfilePage() {
                   <button
                     onClick={handleCancelOrRemove}
                     disabled={friendLoading}
-                    className="group flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-card-inner)] border border-[var(--border-primary)] text-[var(--text-muted)] text-sm font-medium hover:border-[var(--accent-red)] hover:text-[var(--accent-red)] transition-colors disabled:opacity-50"
+                    className="group flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[var(--bg-card-inner)] border border-[var(--border-primary)] text-[var(--text-muted)] text-sm font-medium hover:border-[var(--accent-red)] hover:text-[var(--accent-red)] transition-colors disabled:opacity-50"
                   >
-                    <UserCheck size={16} />
+                    <UserCheck size={14} />
                     <span className="group-hover:hidden">Friends</span>
                     <span className="hidden group-hover:inline">Remove</span>
                   </button>
                 )}
               </div>
             )}
+          </div>
+
+          {/* About strip — extended context about the trader */}
+          <div className="mt-6 pt-5 border-t border-[var(--border-primary)] grid grid-cols-2 md:grid-cols-6 gap-4">
+            <ProfileFact
+              icon={<Globe2 size={13} />}
+              label="Market"
+              value={profile.market || "US"}
+            />
+            <ProfileFact
+              icon={<Wallet size={13} />}
+              label="Currency"
+              value={`${CURRENCY_SYMBOLS[profile.currency] || ""} ${profile.currency}`.trim()}
+            />
+            <ProfileFact
+              icon={<Sparkles size={13} />}
+              label="Plan"
+              value={profile.plan}
+              accent
+            />
+            <ProfileFact
+              icon={<Package size={13} />}
+              label="Open positions"
+              value={String(profile.holdingsCount)}
+            />
+            <ProfileFact
+              icon={<Users size={13} />}
+              label="Followers"
+              value={profile.followersCount.toLocaleString()}
+              sub={profile.copiersCount > 0 ? `${profile.copiersCount} copying` : undefined}
+            />
+            <ProfileFact
+              icon={<DollarSign size={13} />}
+              label="Initial balance"
+              value={formatCurrency(profile.initialBalance)}
+            />
           </div>
         </div>
 
@@ -383,6 +478,14 @@ export default function PublicProfilePage() {
           </div>
         </div>
 
+        {/* Copy Trades Modal */}
+        <CopyTradesModal
+          open={copyOpen}
+          onClose={() => setCopyOpen(false)}
+          trader={profile}
+          onSuccess={fetchProfile}
+        />
+
         {/* Achievements */}
         <div className="bg-[var(--bg-card)] rounded-xl p-6 border border-[var(--border-primary)]">
           <div className="flex items-center gap-3 mb-6">
@@ -451,6 +554,38 @@ export default function PublicProfilePage() {
           </div>
         </div>
       </main>
+    </div>
+  );
+}
+
+/* ── Small profile-fact tile used in the About strip ─────────── */
+function ProfileFact({
+  icon, label, value, sub, accent,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  sub?: string;
+  accent?: boolean;
+}) {
+  return (
+    <div>
+      <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-[var(--text-muted)] mb-1">
+        <span className={accent ? "text-[var(--accent-primary)]" : "text-[var(--text-dim)]"}>{icon}</span>
+        {label}
+      </div>
+      <div
+        className={`text-sm font-semibold ${
+          accent ? "text-[var(--accent-primary)]" : "text-[var(--text-primary)]"
+        }`}
+      >
+        {value}
+      </div>
+      {sub && (
+        <div className="text-[10px] text-[var(--text-muted)] mt-0.5">
+          {sub}
+        </div>
+      )}
     </div>
   );
 }

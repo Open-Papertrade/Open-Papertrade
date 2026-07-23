@@ -205,11 +205,27 @@ def run_backtest(
 
     return {
         "equityCurve": equity_curve,
-        "trades": [asdict(t) for t in trades],
+        "trades": [_trade_to_camel(t) for t in trades],
         "statistics": statistics,
         "monthlyReturns": monthly_returns,
         "indicatorData": indicator_data,
         "priceData": price_data,
+    }
+
+
+def _trade_to_camel(t: TradeEntry) -> dict:
+    """Emit a TradeEntry as camelCase for direct frontend consumption."""
+    return {
+        "entryDate":    t.entry_date,
+        "exitDate":     t.exit_date,
+        "entryPrice":   t.entry_price,
+        "exitPrice":    t.exit_price,
+        "shares":       t.shares,
+        "pnl":          t.pnl,
+        "pnlPercent":   t.pnl_percent,
+        "direction":    t.direction,
+        "exitReason":   t.exit_reason,
+        "holdingBars":  t.holding_bars,
     }
 
 

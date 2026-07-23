@@ -15,7 +15,8 @@ from decimal import Decimal
 
 from .models import (
     UserProfile, UserSettings, Achievement, UserAchievement,
-    Trade, Holding, Watchlist, PriceAlert, LimitOrder, Friendship, Transfer
+    Trade, Holding, Watchlist, PriceAlert, LimitOrder, Friendship, Transfer,
+    TraderFollow, CopyRelationship,
 )
 from django.db.models import Q
 from .market_hours import is_market_open, is_symbol_valid_for_market
@@ -1256,7 +1257,7 @@ class PublicProfileView(APIView):
 
         stats = compute_trader_stats(user)
 
-        # Get achievements
+        # Achievements
         all_achievements = Achievement.objects.all()
         user_achievements = UserAchievement.objects.filter(user=user).select_related('achievement')
         unlocked_ids = set(ua.achievement_id for ua in user_achievements)
@@ -1272,6 +1273,38 @@ class PublicProfileView(APIView):
                 ),
             })
 
+        # Trading context
+        holdings_count = Holding.objects.filter(user=user).count()
+        settings = getattr(user, 'settings', None)
+        market = settings.market if settings else 'US'
+        currency = settings.currency if settings else 'USD'
+
+        # Social context
+        followers_count = TraderFollow.objects.filter(leader=user).count()
+        following_count = TraderFollow.objects.filter(follower=user).count()
+        copiers_count = CopyRelationship.objects.filter(
+            leader=user, status=CopyRelationship.ACTIVE,
+        ).count()
+        copying_count = CopyRelationship.objects.filter(
+            copier=user, status=CopyRelationship.ACTIVE,
+        ).count()
+
+        # Am I (the viewer) already copying this trader?
+        is_copying = False
+        copy_relationship_id = None
+        try:
+            viewer = get_user(request)
+            if viewer and viewer.id != user.id:
+                rel = CopyRelationship.objects.filter(
+                    copier=viewer, leader=user,
+                    status=CopyRelationship.ACTIVE,
+                ).first()
+                if rel:
+                    is_copying = True
+                    copy_relationship_id = str(rel.id)
+        except Exception:
+            pass
+
         return Response({
             'username': user.username,
             'name': user.name,
@@ -1280,6 +1313,17 @@ class PublicProfileView(APIView):
             'level': user.level,
             'rank': user.rank,
             'xp': user.xp,
+            'plan': user.plan,
+            'market': market,
+            'currency': currency,
+            'initialBalance': float(user.initial_balance),
+            'holdingsCount': holdings_count,
+            'followersCount': followers_count,
+            'followingCount': following_count,
+            'copiersCount': copiers_count,
+            'copyingCount': copying_count,
+            'isCopying': is_copying,
+            'copyRelationshipId': copy_relationship_id,
             **stats,
             'memberSince': user.created_at.isoformat(),
             'achievements': achievements,

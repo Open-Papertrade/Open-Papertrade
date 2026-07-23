@@ -1,6 +1,9 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback, useEffect, useRef, ReactNode } from "react";
+import React, {
+  createContext, useContext, useState, useCallback, useEffect, useRef, ReactNode,
+} from "react";
+import { Zap, TrendingUp, X } from "lucide-react";
 
 interface XpToastData {
   amount: number;
@@ -22,273 +25,337 @@ export function useXpToast() {
   return context;
 }
 
-// Inject CSS keyframes once
-function injectStyles() {
-  if (typeof document === "undefined") return;
-  if (document.getElementById("xp-toast-styles")) return;
+const AUTO_DISMISS_MS = 3500;
+const AUTO_DISMISS_MS_RANK_UP = 5000;
+const ENTER_MS = 320;
+const EXIT_MS = 240;
 
-  const style = document.createElement("style");
-  style.id = "xp-toast-styles";
-  style.textContent = `
-    @keyframes xpSlideIn {
-      0% { transform: translateX(calc(100% + 32px)); opacity: 0; }
-      100% { transform: translateX(0); opacity: 1; }
-    }
-    @keyframes xpSlideOut {
-      0% { transform: translateX(0); opacity: 1; }
-      100% { transform: translateX(calc(100% + 32px)); opacity: 0; }
-    }
-    @keyframes xpBounce {
-      0% { transform: scale(0.5); opacity: 0; }
-      50% { transform: scale(1.2); }
-      100% { transform: scale(1); opacity: 1; }
-    }
-    @keyframes xpGlow {
-      0% { box-shadow: 0 4px 16px rgba(255, 92, 0, 0.1); }
-      40% { box-shadow: 0 4px 32px rgba(255, 92, 0, 0.4), 0 0 60px rgba(255, 170, 0, 0.2); }
-      100% { box-shadow: 0 4px 16px rgba(255, 92, 0, 0.15); }
-    }
-    @keyframes xpShimmer {
-      0% { background-position: -200% center; }
-      100% { background-position: 200% center; }
-    }
-    @keyframes xpParticle {
-      0% { transform: translate(0, 0) scale(1); opacity: 1; }
-      100% { opacity: 0; }
-    }
-    @keyframes rankUpPulse {
-      0% { transform: scale(0.8); opacity: 0; }
-      50% { transform: scale(1.1); }
-      100% { transform: scale(1); opacity: 1; }
-    }
-  `;
-  document.head.appendChild(style);
+type ToastPhase = "enter" | "visible" | "exit";
+interface ActiveToast extends XpToastData {
+  key: number;
+  phase: ToastPhase;
+  startedAt: number;
+  paused: boolean;
+  remaining: number;
 }
 
-// Particle positions (8 particles bursting outward)
-const PARTICLES = [
-  { x: -24, y: -20 },
-  { x: 24, y: -20 },
-  { x: -30, y: 0 },
-  { x: 30, y: 0 },
-  { x: -24, y: 20 },
-  { x: 24, y: 20 },
-  { x: 0, y: -28 },
-  { x: 0, y: 28 },
-];
+let toastKeyCounter = 0;
+
+function ensureStyles() {
+  if (typeof document === "undefined") return;
+  if (document.getElementById("op-xp-styles")) return;
+  const el = document.createElement("style");
+  el.id = "op-xp-styles";
+  el.textContent = `
+    @keyframes op-xp-in {
+      0%   { transform: translateX(calc(100% + 32px)) scale(0.94); opacity: 0; }
+      60%  { transform: translateX(-3px) scale(1.02); opacity: 1; }
+      100% { transform: translateX(0) scale(1); opacity: 1; }
+    }
+    @keyframes op-xp-out {
+      0%   { transform: translateX(0) scale(1); opacity: 1; max-height: 200px; margin-bottom: 12px; }
+      100% { transform: translateX(calc(100% + 32px)) scale(0.94); opacity: 0; max-height: 0; margin-bottom: 0; }
+    }
+    @keyframes op-xp-progress {
+      from { transform: scaleX(1); }
+      to   { transform: scaleX(0); }
+    }
+    @keyframes op-xp-badge-bounce {
+      0%   { transform: scale(0.5); opacity: 0; }
+      55%  { transform: scale(1.18); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes op-xp-halo {
+      0%   { transform: scale(0.6); opacity: 0.6; }
+      100% { transform: scale(1.8); opacity: 0; }
+    }
+    @keyframes op-xp-count-up {
+      0%   { transform: translateY(6px); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes op-xp-rankup-slide {
+      0%   { transform: translateY(-4px); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+  `;
+  document.head.appendChild(el);
+}
 
 export function XpToastProvider({ children }: { children: ReactNode }) {
-  const [queue, setQueue] = useState<XpToastData[]>([]);
-  const [current, setCurrent] = useState<XpToastData | null>(null);
-  const [phase, setPhase] = useState<"enter" | "visible" | "exit" | "idle">("idle");
-  const stylesInjected = useRef(false);
+  const [toasts, setToasts] = useState<ActiveToast[]>([]);
+  const timers = useRef<Record<number, ReturnType<typeof setTimeout>>>({});
 
-  // Inject styles on mount
-  useEffect(() => {
-    if (!stylesInjected.current) {
-      injectStyles();
-      stylesInjected.current = true;
-    }
+  useEffect(() => { ensureStyles(); }, []);
+
+  const dismiss = useCallback((key: number) => {
+    setToasts(prev => prev.map(t => t.key === key ? { ...t, phase: "exit" } : t));
+    const timer = timers.current[key];
+    if (timer) clearTimeout(timer);
+    delete timers.current[key];
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.key !== key));
+    }, EXIT_MS);
   }, []);
 
   const showXpGain = useCallback((amount: number, newLevel?: number, newRank?: string) => {
     if (amount <= 0) return;
-    setQueue(prev => [...prev, { amount, newLevel, newRank }]);
+    const key = ++toastKeyCounter;
+    const dismissMs = newRank ? AUTO_DISMISS_MS_RANK_UP : AUTO_DISMISS_MS;
+
+    setToasts(prev => [...prev, {
+      key,
+      amount,
+      newLevel,
+      newRank,
+      phase: "enter",
+      startedAt: Date.now(),
+      paused: false,
+      remaining: dismissMs,
+    }]);
+
+    setTimeout(() => {
+      setToasts(prev => prev.map(p => p.key === key ? { ...p, phase: "visible" } : p));
+    }, ENTER_MS);
+    timers.current[key] = setTimeout(() => dismiss(key), dismissMs + ENTER_MS);
+  }, [dismiss]);
+
+  const handleMouseEnter = useCallback((key: number) => {
+    const timer = timers.current[key];
+    if (timer) clearTimeout(timer);
+    delete timers.current[key];
+    setToasts(prev => prev.map(t => {
+      if (t.key !== key) return t;
+      const total = t.newRank ? AUTO_DISMISS_MS_RANK_UP : AUTO_DISMISS_MS;
+      const elapsed = Date.now() - t.startedAt;
+      return { ...t, paused: true, remaining: Math.max(0, total - elapsed) };
+    }));
   }, []);
 
-  // Dequeue: pick the next toast when nothing is showing
-  useEffect(() => {
-    if (current || queue.length === 0) return;
-
-    const next = queue[0];
-    setQueue(prev => prev.slice(1));
-    setCurrent(next);
-    setPhase("enter");
-  }, [queue, current]);
-
-  // Timer: manage the phase lifecycle for the current toast
-  useEffect(() => {
-    if (!current) return;
-
-
-    // Transition to visible after slide-in
-    const t1 = setTimeout(() => setPhase("visible"), 400);
-
-    // Start exit after 2.5s
-    const t2 = setTimeout(() => setPhase("exit"), 2500);
-
-    // Clear from DOM after exit animation
-    const t3 = setTimeout(() => {
-      setCurrent(null);
-      setPhase("idle");
-    }, 2800);
-
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-    };
-  }, [current]);
-
-  const isRankUp = current?.newRank != null;
+  const handleMouseLeave = useCallback((key: number) => {
+    setToasts(prev => prev.map(t => {
+      if (t.key !== key) return t;
+      const total = t.newRank ? AUTO_DISMISS_MS_RANK_UP : AUTO_DISMISS_MS;
+      timers.current[key] = setTimeout(() => dismiss(key), t.remaining);
+      return { ...t, paused: false, startedAt: Date.now() - (total - t.remaining) };
+    }));
+  }, [dismiss]);
 
   return (
     <XpToastContext.Provider value={{ showXpGain }}>
       {children}
-      {current && (
-        <div
-          style={{
-            position: "fixed",
-            top: 80,
-            right: 24,
-            zIndex: 9998,
-            animation: phase === "enter"
-              ? "xpSlideIn 0.4s ease-out forwards"
-              : phase === "exit"
-                ? "xpSlideOut 0.3s ease-in forwards"
-                : "none",
-            transform: phase === "visible" ? "translateX(0)" : undefined,
-            opacity: phase === "visible" ? 1 : undefined,
-            pointerEvents: "none",
-          }}
-        >
-          {/* Particle burst */}
-          {(phase === "enter" || phase === "visible") && PARTICLES.map((p, i) => (
+      <div
+        aria-live="polite"
+        style={{
+          position: "fixed",
+          bottom: 24,
+          right: 24,
+          zIndex: 9998,
+          display: "flex",
+          flexDirection: "column-reverse",  // newest at bottom, older stacks upward
+          gap: 12,
+          pointerEvents: "none",
+          maxWidth: 340,
+        }}
+      >
+        {toasts.map((t) => {
+          const isRankUp = t.newRank != null;
+          const accent = isRankUp ? "#FFD700" : "var(--accent-primary)";
+          const accent2 = isRankUp ? "#FFA200" : "var(--accent-secondary)";
+
+          return (
             <div
-              key={i}
+              key={t.key}
+              onMouseEnter={() => handleMouseEnter(t.key)}
+              onMouseLeave={() => handleMouseLeave(t.key)}
               style={{
-                position: "absolute",
-                left: "50%",
-                top: "50%",
-                width: 6,
-                height: 6,
-                borderRadius: "50%",
-                background: isRankUp
-                  ? `hsl(${40 + i * 10}, 100%, ${60 + i * 3}%)`
-                  : `hsl(${20 + i * 5}, 100%, ${55 + i * 3}%)`,
-                animation: "xpParticle 0.8s ease-out forwards",
-                animationDelay: `${0.05 * i}s`,
-                // Use CSS custom property for the translate endpoint
-                transform: `translate(${p.x}px, ${p.y}px) scale(0)`,
-                opacity: 0,
-                // Override animation with specific keyframes per particle
-                animationName: "none",
+                pointerEvents: "auto",
+                width: isRankUp ? 320 : 260,
+                animation:
+                  t.phase === "enter" ? `op-xp-in ${ENTER_MS}ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards` :
+                  t.phase === "exit"  ? `op-xp-out ${EXIT_MS}ms cubic-bezier(0.55, 0.06, 0.68, 0.19) forwards` :
+                                        undefined,
               }}
             >
-              <style>{`
-                @keyframes xpParticle${i} {
-                  0% { transform: translate(0, 0) scale(1); opacity: 1; }
-                  100% { transform: translate(${p.x}px, ${p.y}px) scale(0); opacity: 0; }
-                }
-              `}</style>
               <div
                 style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: "50%",
-                  background: "inherit",
-                  animation: `xpParticle${i} 0.8s ease-out forwards`,
-                  animationDelay: `${0.05 * i}s`,
-                }}
-              />
-            </div>
-          ))}
-
-          {/* Toast pill */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 4,
-              padding: isRankUp ? "12px 20px" : "10px 18px",
-              background: isRankUp
-                ? "linear-gradient(135deg, rgba(30, 25, 15, 0.98), rgba(40, 30, 10, 0.98))"
-                : "linear-gradient(135deg, rgba(20, 18, 16, 0.98), rgba(30, 24, 18, 0.98))",
-              border: isRankUp
-                ? "1px solid rgba(255, 200, 50, 0.6)"
-                : "1px solid rgba(255, 92, 0, 0.5)",
-              borderRadius: 14,
-              animation: phase === "visible"
-                ? "xpGlow 1s ease-in-out"
-                : "none",
-              backgroundImage: phase === "visible"
-                ? "linear-gradient(90deg, transparent 0%, rgba(255, 170, 50, 0.08) 50%, transparent 100%)"
-                : undefined,
-              backgroundSize: "200% 100%",
-              minWidth: 120,
-              ...(phase === "visible" ? {
-                animationName: "xpGlow, xpShimmer",
-                animationDuration: "1s, 1.5s",
-                animationTimingFunction: "ease-in-out, linear",
-                animationFillMode: "forwards, forwards",
-              } : {}),
-            }}
-          >
-            {/* XP line */}
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              {/* Zap icon */}
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke={isRankUp ? "#FFD700" : "#FF5C00"}
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                style={{
-                  filter: isRankUp
-                    ? "drop-shadow(0 0 6px rgba(255, 215, 0, 0.6))"
-                    : "drop-shadow(0 0 4px rgba(255, 92, 0, 0.5))",
+                  position: "relative",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  padding: isRankUp ? "14px 16px" : "12px 14px",
+                  background: "color-mix(in oklab, var(--bg-card) 92%, transparent)",
+                  backdropFilter: "blur(20px)",
+                  WebkitBackdropFilter: "blur(20px)",
+                  border: `1px solid ${isRankUp ? "rgba(255, 215, 0, 0.4)" : "var(--border-primary)"}`,
+                  borderRadius: 14,
+                  boxShadow: isRankUp
+                    ? "0 12px 40px -8px rgba(255, 215, 0, 0.25), 0 2px 8px -2px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.06)"
+                    : "0 12px 40px -8px rgba(255, 92, 0, 0.2), 0 2px 8px -2px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.04)",
+                  overflow: "hidden",
+                  fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif",
                 }}
               >
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-              </svg>
+                {/* Icon badge with halo */}
+                <div style={{ position: "relative", flexShrink: 0 }}>
+                  {t.phase === "enter" && (
+                    <span
+                      aria-hidden
+                      style={{
+                        position: "absolute",
+                        inset: -6,
+                        borderRadius: 999,
+                        background: `radial-gradient(circle, ${isRankUp ? "rgba(255, 215, 0, 0.6)" : "rgba(255, 92, 0, 0.5)"} 0%, transparent 70%)`,
+                        animation: "op-xp-halo 700ms ease-out forwards",
+                      }}
+                    />
+                  )}
+                  <div
+                    style={{
+                      position: "relative",
+                      width: 40, height: 40,
+                      borderRadius: 12,
+                      background: `linear-gradient(135deg, ${accent} 0%, ${accent2} 100%)`,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      boxShadow: isRankUp
+                        ? "0 4px 14px -2px rgba(255, 215, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.3)"
+                        : "0 4px 12px -2px rgba(255, 92, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)",
+                      animation: t.phase === "enter"
+                        ? "op-xp-badge-bounce 460ms cubic-bezier(0.34, 1.56, 0.64, 1) 60ms both"
+                        : undefined,
+                    }}
+                  >
+                    {isRankUp
+                      ? <TrendingUp size={18} color="#fff" strokeWidth={2.75} />
+                      : <Zap size={18} color="#fff" strokeWidth={2.75} fill="#fff" />}
+                  </div>
+                </div>
 
-              {/* XP amount */}
-              <span
-                style={{
-                  fontFamily: "'DM Mono', monospace",
-                  fontSize: 18,
-                  fontWeight: 600,
-                  color: isRankUp ? "#FFD700" : "#FF5C00",
-                  textShadow: isRankUp
-                    ? "0 0 12px rgba(255, 215, 0, 0.5)"
-                    : "0 0 8px rgba(255, 92, 0, 0.4)",
-                  animation: phase === "enter"
-                    ? "xpBounce 0.5s 0.1s ease-out forwards"
-                    : "none",
-                  opacity: phase === "enter" ? 0 : 1,
-                }}
-              >
-                +{current.amount} XP
-              </span>
-            </div>
+                {/* Text */}
+                <div style={{ flex: 1, minWidth: 0, paddingRight: 18 }}>
+                  <div
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                      color: accent,
+                      fontFamily: "'DM Mono', ui-monospace, monospace",
+                      marginBottom: 2,
+                    }}
+                  >
+                    {isRankUp ? "Rank up" : "XP gained"}
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "baseline",
+                      gap: 6,
+                      animation: t.phase === "enter"
+                        ? "op-xp-count-up 400ms ease-out 120ms both"
+                        : undefined,
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontFamily: "'DM Mono', ui-monospace, monospace",
+                        fontSize: 20,
+                        fontWeight: 700,
+                        color: "var(--text-primary)",
+                        lineHeight: 1.1,
+                      }}
+                    >
+                      +{t.amount}
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: "'DM Mono', ui-monospace, monospace",
+                        fontSize: 12,
+                        fontWeight: 500,
+                        color: "var(--text-muted)",
+                        letterSpacing: "0.04em",
+                      }}
+                    >
+                      XP
+                    </span>
+                  </div>
+                  {isRankUp && (
+                    <div
+                      style={{
+                        fontSize: 12,
+                        color: "var(--text-secondary)",
+                        marginTop: 4,
+                        animation: "op-xp-rankup-slide 350ms ease-out 250ms both",
+                      }}
+                    >
+                      Now{" "}
+                      <span style={{ color: accent, fontWeight: 600 }}>
+                        Lv.{t.newLevel} {t.newRank}
+                      </span>
+                    </div>
+                  )}
+                </div>
 
-            {/* Rank up line */}
-            {isRankUp && (
-              <div
-                style={{
-                  fontSize: 11,
-                  fontWeight: 700,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.08em",
-                  color: "#FFD700",
-                  textShadow: "0 0 10px rgba(255, 215, 0, 0.4)",
-                  animation: "rankUpPulse 0.6s ease-out forwards",
-                  animationDelay: "0.3s",
-                  opacity: 0,
-                  animationFillMode: "forwards",
-                  marginTop: 2,
-                }}
-              >
-                RANK UP! &rarr; {current.newRank}
+                {/* Close button */}
+                <button
+                  onClick={() => dismiss(t.key)}
+                  aria-label="Dismiss XP notification"
+                  style={{
+                    position: "absolute",
+                    top: 8, right: 8,
+                    width: 20, height: 20,
+                    borderRadius: 6,
+                    border: "none",
+                    background: "transparent",
+                    color: "var(--text-muted)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    transition: "background 150ms, color 150ms",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "var(--bg-hover)";
+                    e.currentTarget.style.color = "var(--text-primary)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "transparent";
+                    e.currentTarget.style.color = "var(--text-muted)";
+                  }}
+                >
+                  <X size={11} />
+                </button>
+
+                {/* Progress bar */}
+                <div
+                  aria-hidden
+                  style={{
+                    position: "absolute",
+                    left: 0, right: 0, bottom: 0,
+                    height: 2,
+                    background: "rgba(255, 255, 255, 0.06)",
+                    overflow: "hidden",
+                  }}
+                >
+                  <div
+                    style={{
+                      height: "100%",
+                      background: `linear-gradient(90deg, ${accent}, ${accent2})`,
+                      transformOrigin: "left center",
+                      animationName: t.phase === "visible" ? "op-xp-progress" : "none",
+                      animationDuration: `${t.remaining}ms`,
+                      animationTimingFunction: "linear",
+                      animationFillMode: "forwards",
+                      animationPlayState: t.paused ? "paused" : "running",
+                    }}
+                  />
+                </div>
               </div>
-            )}
-          </div>
-        </div>
-      )}
+            </div>
+          );
+        })}
+      </div>
     </XpToastContext.Provider>
   );
 }

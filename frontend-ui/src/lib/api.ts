@@ -154,6 +154,17 @@ export interface PublicProfile {
   level: number;
   rank: string;
   xp: number;
+  plan: string;
+  market: string;
+  currency: string;
+  initialBalance: number;
+  holdingsCount: number;
+  followersCount: number;
+  followingCount: number;
+  copiersCount: number;
+  copyingCount: number;
+  isCopying: boolean;
+  copyRelationshipId: string | null;
   portfolioReturn: number;
   realizedProfit: number;
   totalTrades: number;
@@ -1083,11 +1094,11 @@ class UserAPI {
   // ── Copy Trading ────────────────────────────────────────────
 
   async getCopyDashboard() {
-    return this.fetch('/copy-trading/');
+    return this.fetch('/users/copy-trading/');
   }
 
   async followTrader(username: string, feedDelay = '1H') {
-    return this.fetch(`/copy-trading/follow/${username}/`, {
+    return this.fetch(`/users/copy-trading/follow/${username}/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ feedDelay }),
@@ -1095,11 +1106,11 @@ class UserAPI {
   }
 
   async unfollowTrader(username: string) {
-    return this.fetch(`/copy-trading/follow/${username}/`, { method: 'DELETE' });
+    return this.fetch(`/users/copy-trading/follow/${username}/`, { method: 'DELETE' });
   }
 
   async startCopyTrading(username: string, config: Record<string, unknown>) {
-    return this.fetch(`/copy-trading/copy/${username}/`, {
+    return this.fetch(`/users/copy-trading/copy/${username}/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(config),
@@ -1107,7 +1118,7 @@ class UserAPI {
   }
 
   async updateCopyRelationship(id: string, updates: Record<string, unknown>) {
-    return this.fetch(`/copy-trading/copy/${id}/`, {
+    return this.fetch(`/users/copy-trading/copy/${id}/`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates),
@@ -1115,11 +1126,11 @@ class UserAPI {
   }
 
   async stopCopyTrading(id: string) {
-    return this.fetch(`/copy-trading/stop/${id}/`, { method: 'DELETE' });
+    return this.fetch(`/users/copy-trading/stop/${id}/`, { method: 'DELETE' });
   }
 
   async mirrorPortfolio(username: string, allocatedFunds: number, tradeDelay = 'NONE') {
-    return this.fetch(`/copy-trading/mirror/${username}/`, {
+    return this.fetch(`/users/copy-trading/mirror/${username}/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ allocatedFunds, tradeDelay }),
@@ -1127,27 +1138,27 @@ class UserAPI {
   }
 
   async getSocialFeed(limit = 30, offset = 0) {
-    return this.fetch(`/copy-trading/feed/?limit=${limit}&offset=${offset}`);
+    return this.fetch(`/users/copy-trading/feed/?limit=${limit}&offset=${offset}`);
   }
 
   async getCopyHistory(relationshipId: string) {
-    return this.fetch(`/copy-trading/history/${relationshipId}/`);
+    return this.fetch(`/users/copy-trading/history/${relationshipId}/`);
   }
 
   async getCopyPerformance() {
-    return this.fetch('/copy-trading/performance/');
+    return this.fetch('/users/copy-trading/performance/');
   }
 
   async processPendingCopyTrades() {
-    return this.fetch('/copy-trading/process/', { method: 'POST' });
+    return this.fetch('/users/copy-trading/process/', { method: 'POST' });
   }
 
   async getMyFollowers() {
-    return this.fetch('/copy-trading/followers/');
+    return this.fetch('/users/copy-trading/followers/');
   }
 
   async getMyFollowing() {
-    return this.fetch('/copy-trading/following/');
+    return this.fetch('/users/copy-trading/following/');
   }
 }
 

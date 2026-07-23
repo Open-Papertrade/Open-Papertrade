@@ -55,15 +55,23 @@ secrets.json
 *.swp
 *.swo
 
-# Markdown (except README and CONTRIBUTING)
+# Markdown (except README, CONTRIBUTING, and everything under docs/)
 *.md
 !README.md
 !CONTRIBUTING.md
+!docs/**/*.md
+!docs/*.md
+
+# Private / not-for-commit
+SEO_STRATEGY.md
+posts/
+landing-page/
 
 # PDFs
 *.pdf
 
 # Assets / docs folders
+assets/
 icons/
 readme/
 assets/

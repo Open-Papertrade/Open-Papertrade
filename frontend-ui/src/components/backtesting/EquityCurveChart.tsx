@@ -3,6 +3,24 @@
 import { useEffect, useRef } from "react";
 import type { EquityPoint, BacktestTradeEntry } from "@/types/backtesting";
 
+/**
+ * lightweight-charts v5 expects `time` as either "YYYY-MM-DD", a UNIX seconds
+ * number, or a {year,month,day} object. Anything else (null, undefined, empty
+ * string, ISO datetime with time+Z) makes it crash with
+ * "Cannot read properties of undefined (reading 'year')".
+ */
+function normalizeTime(input: unknown): string | null {
+  if (typeof input === "number" && Number.isFinite(input)) {
+    // treat as UNIX seconds — return as-is (chart accepts number directly, but for
+    // consistency across series we stringify only if the caller wants a string)
+    return String(input);
+  }
+  if (typeof input !== "string" || !input.trim()) return null;
+  // "2024-01-15T00:00:00Z" or "2024-01-15T00:00:00.000+05:30" → "2024-01-15"
+  const m = input.match(/^(\d{4}-\d{2}-\d{2})/);
+  return m ? m[1] : null;
+}
+
 interface Props {
   equityCurve: EquityPoint[];
   trades?: BacktestTradeEntry[];
@@ -31,7 +49,7 @@ export default function EquityCurveChart({
     let cancelled = false;
 
     import("lightweight-charts").then(
-      ({ createChart, ColorType, CrosshairMode, LineSeries, AreaSeries }) => {
+      ({ createChart, ColorType, CrosshairMode, LineSeries, AreaSeries, createSeriesMarkers }) => {
         if (cancelled || !containerRef.current) return;
 
         // Cleanup previous chart
@@ -79,10 +97,12 @@ export default function EquityCurveChart({
         });
 
         equitySeries.setData(
-          equityCurve.map((p) => ({
-            time: p.date,
-            value: p.equity,
-          }))
+          equityCurve
+            .map((p) => {
+              const time = normalizeTime(p.date);
+              return time && Number.isFinite(p.equity) ? { time, value: p.equity } : null;
+            })
+            .filter((x): x is { time: string; value: number } => x !== null) as any
         );
 
         // Comparison curve (if provided)
@@ -94,10 +114,12 @@ export default function EquityCurveChart({
             title: comparisonLabel || "Manual",
           });
           compSeries.setData(
-            comparisonCurve.map((p) => ({
-              time: p.date,
-              value: p.equity,
-            }))
+            comparisonCurve
+              .map((p) => {
+                const time = normalizeTime(p.date);
+                return time && Number.isFinite(p.equity) ? { time, value: p.equity } : null;
+              })
+              .filter((x): x is { time: string; value: number } => x !== null) as any
           );
         }
 
@@ -111,39 +133,53 @@ export default function EquityCurveChart({
           title: "Initial",
         });
 
-        // Trade markers
+        // Trade markers — v5 uses createSeriesMarkers(series, markers) (moved off the series API).
         if (trades && trades.length > 0) {
-          const markers = trades.flatMap((t) => {
-            const result = [];
-            if (t.entryDate) {
+          type Marker = {
+            time: string;
+            position: "belowBar" | "aboveBar";
+            color: string;
+            shape: "arrowUp" | "arrowDown";
+            text: string;
+          };
+          const markers: Marker[] = trades.flatMap((t) => {
+            const result: Marker[] = [];
+            const entryTime = normalizeTime(t.entryDate);
+            if (entryTime) {
               result.push({
-                time: t.entryDate,
-                position: "belowBar" as const,
+                time: entryTime,
+                position: "belowBar",
                 color: "#22C55E",
-                shape: "arrowUp" as const,
+                shape: "arrowUp",
                 text: "B",
               });
             }
-            result.push({
-              time: t.exitDate,
-              position: "aboveBar" as const,
-              color:
-                t.exitReason === "STOP_LOSS"
-                  ? "#EF4444"
-                  : t.exitReason === "TAKE_PROFIT"
-                  ? "#22C55E"
-                  : "#FF5C00",
-              shape: "arrowDown" as const,
-              text:
-                t.exitReason === "STOP_LOSS"
-                  ? "SL"
-                  : t.exitReason === "TAKE_PROFIT"
-                  ? "TP"
-                  : "S",
-            });
+            const exitTime = normalizeTime(t.exitDate);
+            if (exitTime) {
+              result.push({
+                time: exitTime,
+                position: "aboveBar",
+                color:
+                  t.exitReason === "STOP_LOSS"
+                    ? "#EF4444"
+                    : t.exitReason === "TAKE_PROFIT"
+                    ? "#22C55E"
+                    : "#FF5C00",
+                shape: "arrowDown",
+                text:
+                  t.exitReason === "STOP_LOSS"
+                    ? "SL"
+                    : t.exitReason === "TAKE_PROFIT"
+                    ? "TP"
+                    : "S",
+              });
+            }
             return result;
           });
-          (equitySeries as any).setMarkers(markers.sort((a: any, b: any) => a.time.localeCompare(b.time)));
+          if (markers.length > 0) {
+            markers.sort((a, b) => a.time.localeCompare(b.time));
+            createSeriesMarkers(equitySeries, markers as any);
+          }
         }
 
         // Drawdown area (on separate price scale)
@@ -162,10 +198,14 @@ export default function EquityCurveChart({
           });
 
           drawdownSeries.setData(
-            equityCurve.map((p) => ({
-              time: p.date,
-              value: -p.drawdownPercent,
-            }))
+            equityCurve
+              .map((p) => {
+                const time = normalizeTime(p.date);
+                return time && Number.isFinite(p.drawdownPercent)
+                  ? { time, value: -p.drawdownPercent }
+                  : null;
+              })
+              .filter((x): x is { time: string; value: number } => x !== null) as any
           );
         }
 

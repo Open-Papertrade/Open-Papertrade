@@ -20,7 +20,7 @@ import {
   deleteStrategy,
   saveStrategy,
   type SavedStrategy,
-  type SavedBacktest,
+  type BacktestListEntry,
 } from "@/lib/services/backtesting/storage";
 import { STRATEGY_TEMPLATES } from "@/lib/services/backtesting/templates";
 
@@ -30,24 +30,34 @@ export default function BacktestingPage() {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("strategies");
   const [strategies, setStrategies] = useState<SavedStrategy[]>([]);
-  const [backtests, setBacktests] = useState<SavedBacktest[]>([]);
+  const [backtests, setBacktests] = useState<BacktestListEntry[]>([]);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setStrategies(getStrategies());
-    setBacktests(getBacktests());
-    setMounted(true);
+    let cancelled = false;
+    (async () => {
+      const [s, b] = await Promise.all([
+        getStrategies().catch(() => []),
+        getBacktests().catch(() => []),
+      ]);
+      if (!cancelled) {
+        setStrategies(s);
+        setBacktests(b);
+        setMounted(true);
+      }
+    })();
+    return () => { cancelled = true; };
   }, []);
 
-  const handleDelete = (id: string) => {
-    deleteStrategy(id);
-    setStrategies(getStrategies());
+  const handleDelete = async (id: string) => {
+    await deleteStrategy(id);
+    setStrategies(await getStrategies());
   };
 
-  const cloneTemplate = (idx: number) => {
+  const cloneTemplate = async (idx: number) => {
     const template = STRATEGY_TEMPLATES[idx];
     if (!template) return;
-    const saved = saveStrategy({
+    const saved = await saveStrategy({
       name: template.name,
       description: template.description,
       config: template.config,
@@ -257,7 +267,11 @@ export default function BacktestingPage() {
                   <div className="col-span-1"></div>
                 </div>
                 {backtests.map((bt) => {
-                  const s = bt.results?.statistics;
+                  const s = bt.summary_stats;
+                  const ret = s?.totalReturnPercent;
+                  const win = s?.winRate;
+                  const sharpe = s?.sharpeRatio;
+                  const dd = s?.maxDrawdownPercent;
                   return (
                     <div
                       key={bt.id}
@@ -278,26 +292,24 @@ export default function BacktestingPage() {
                       </div>
                       <div
                         className={`col-span-1 text-right text-xs font-mono font-medium ${
-                          (s?.totalReturnPercent ?? 0) >= 0
+                          (ret ?? 0) >= 0
                             ? "text-[var(--accent-green)]"
                             : "text-[var(--accent-red)]"
                         }`}
                       >
-                        {s ? fmt(s.totalReturnPercent) : "—"}
+                        {typeof ret === "number" ? fmt(ret) : "—"}
                       </div>
                       <div className="col-span-1 text-right text-xs font-mono text-[var(--text-secondary)]">
-                        {s ? `${s.winRate.toFixed(0)}%` : "—"}
+                        {typeof win === "number" ? `${win.toFixed(0)}%` : "—"}
                       </div>
                       <div className="col-span-1 text-right text-xs font-mono text-[var(--text-secondary)]">
                         {s?.totalTrades ?? "—"}
                       </div>
                       <div className="col-span-1 text-right text-xs font-mono text-[var(--text-secondary)]">
-                        {s ? s.sharpeRatio.toFixed(2) : "—"}
+                        {typeof sharpe === "number" ? sharpe.toFixed(2) : "—"}
                       </div>
                       <div className="col-span-1 text-right text-xs font-mono text-[var(--accent-red)]">
-                        {s
-                          ? `-${s.maxDrawdownPercent.toFixed(1)}%`
-                          : "—"}
+                        {typeof dd === "number" ? `-${dd.toFixed(1)}%` : "—"}
                       </div>
                       <div className="col-span-1 flex justify-end">
                         <ChevronRight
