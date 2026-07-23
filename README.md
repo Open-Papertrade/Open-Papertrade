@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  <em>An applied-AI trading lab. Paper trading on live market data, strategy backtesting, LLM behavioral coaching, and an agentic RAG analyst over SEC filings — cited, verifiable, and refusal-first.</em>
+  <em>An applied-AI trading lab. Paper trading on live market data, strategy backtesting, LLM behavioral coaching, and an agentic RAG analyst over SEC filings — cited, verifiable, and refusal-first. <a href="https://open-papertrade.gitbook.io/docs/">View Docs</a></em>
 </p>
 
 ---
